@@ -100,6 +100,7 @@ async function OrderDetailView({ params, searchParams }: PageProps<"/[lang]/orde
                 <span className="text-sm text-muted">
                   {item.quantity} × {money(item.unitPrice)}{item.store ? ` · ${item.store}` : ""} · {feeText(item)}
                   {replaced ? ` · ${fill(t.items.replaces, { name: replaced.name })}` : ""}
+                  {item.stockItemId ? <> · <Link href={`/${locale}/stock/${item.stockItemId}`} className="underline">{t.stock.stockLine}</Link></> : ""}
                 </span>
                 <span className="text-right text-sm text-muted">{item.fee ? `+ ${money(item.fee)}` : ""}</span>
                 <div className="col-span-2 mt-1 flex flex-wrap items-center gap-2">

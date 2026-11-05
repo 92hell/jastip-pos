@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function InvoicePage({ params }: PageProps<"/[lang]/i/[token]">) {
   const { t } = await currentLocale();
   return (
-    <main id="main" className="mx-auto max-w-2xl px-4 py-6">
+    <main className="mx-auto max-w-2xl px-4 py-6">
       <Suspense fallback={<p>{t.common.loading}</p>}>
         <InvoiceView params={params} />
       </Suspense>

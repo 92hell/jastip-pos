@@ -7,7 +7,8 @@ import { requireUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
 import { getOrder } from "@/lib/orders";
 import { getSettings } from "@/lib/settings";
-import { clientOptions, eventOptions, toFormValues } from "../../form-data";
+import { clientOptions, eventOptions, stockText, toFormValues } from "../../form-data";
+import { availableStock } from "@/lib/stock";
 import { OrderForm } from "../../OrderForm";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,13 +31,15 @@ async function EditOrder({ params }: { params: PageProps<"/[lang]/orders/[id]/ed
   const id = Number((await params).id);
   const order = Number.isSafeInteger(id) ? await getOrder(getDb(), id) : null;
   if (!order) notFound();
-  const [clients, settings, events] = await Promise.all([clientOptions(getDb()), getSettings(getDb()), eventOptions(getDb(), t.events, order.event)]);
+  const [clients, settings, events, stock] = await Promise.all([
+    clientOptions(getDb()), getSettings(getDb()), eventOptions(getDb(), t.events, order.event), availableStock(getDb()),
+  ]);
   if (!clients.some((c) => c.id === order.clientId)) clients.unshift({ id: order.client.id, name: order.client.name, isReseller: order.client.isReseller });
   return (
     <>
       <h1 className="mb-4 font-display text-4xl">{fill(t.orders.editTitle, { number: order.number })}</h1>
       <OrderForm locale={locale} id={order.id} clients={clients} events={events} noEventLabel={t.events.noEvent} voucherAmount={settings.voucherAmount}
-        t={t.orders} errorsText={t.errors} resellerLabel={t.clients.reseller} initial={toFormValues(order, locale)} />
+        t={t.orders} errorsText={t.errors} resellerLabel={t.clients.reseller} initial={toFormValues(order, locale)} stock={stock} stockText={stockText(t)} />
     </>
   );
 }

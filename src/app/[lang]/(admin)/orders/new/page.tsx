@@ -5,7 +5,8 @@ import { currentLocale } from "@/i18n/server";
 import { requireUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
-import { clientOptions, eventOptions } from "../form-data";
+import { availableStock } from "@/lib/stock";
+import { clientOptions, eventOptions, stockText } from "../form-data";
 import { OrderForm } from "../OrderForm";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,7 +29,7 @@ export default async function NewOrderPage({ searchParams }: PageProps<"/[lang]/
 async function NewOrder({ searchParams }: { searchParams: PageProps<"/[lang]/orders/new">["searchParams"] }) {
   const { locale, t } = await currentLocale();
   await requireUser(locale);
-  const [clients, settings, events] = await Promise.all([clientOptions(getDb()), getSettings(getDb()), eventOptions(getDb(), t.events)]);
+  const [clients, settings, events, stock] = await Promise.all([clientOptions(getDb()), getSettings(getDb()), eventOptions(getDb(), t.events), availableStock(getDb())]);
   if (clients.length === 0) {
     return (
       <p className="rounded-3xl bg-white p-5">
@@ -42,6 +43,7 @@ async function NewOrder({ searchParams }: { searchParams: PageProps<"/[lang]/ord
   const event = String(query.event ?? "");
   return (
     <OrderForm locale={locale} clients={clients} events={events} noEventLabel={t.events.noEvent} voucherAmount={settings.voucherAmount} t={t.orders} errorsText={t.errors} resellerLabel={t.clients.reseller}
+      stock={stock} stockText={stockText(t)}
       initial={{
         clientId: clients.some((c) => String(c.id) === preselect) ? preselect : "",
         eventId: events.some((e) => String(e.id) === event) ? event : "",

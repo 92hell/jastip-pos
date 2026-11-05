@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LoginPage() {
   const { locale, t } = await currentLocale();
   return (
-    <main id="main" className="mx-auto max-w-sm px-4 py-8">
+    <main className="mx-auto max-w-sm px-4 py-8">
       <div className="mb-6 flex items-center justify-between gap-3">
         <Link href={`/${locale}`} className="no-underline">
           <Brand name="titiplailiyuk" />

@@ -56,6 +56,7 @@ async function EventDetail({ params, searchParams }: PageProps<"/[lang]/events/[
       <div className="mb-6 flex flex-wrap gap-2">
         <Link href={`/${locale}/events/${id}/shopping`} className="rounded-full bg-primary px-5 py-2 font-semibold text-white hover:bg-primary-dark">{t.events.shoppingList}</Link>
         {!event.closedAt && <Link href={`/${locale}/orders/new?event=${id}`} className={button}>+ {t.orders.add}</Link>}
+        {!event.closedAt && event.kind !== "trip" && <Link href={`/${locale}/stock?event=${id}`} className={button}>{t.stock.sellAtEvent}</Link>}
         <ActionButton action={toggleEventClosed} fields={{ locale, id, closed: String(!event.closedAt) }} className={button}>
           {event.closedAt ? t.events.reopen : t.events.close}
         </ActionButton>
@@ -71,6 +72,8 @@ async function EventDetail({ params, searchParams }: PageProps<"/[lang]/events/[
           <dt>{t.events.summaryPaid}</dt><dd className="text-right">{money(summary.paid)}</dd>
           <dt>{t.events.summaryOutstanding}</dt><dd className="text-right">{money(summary.outstanding)}</dd>
           {summary.soldOut > 0 && (<><dt>{t.events.summarySoldOut}</dt><dd className="text-right">{summary.soldOut}</dd></>)}
+          {summary.stockSales > 0 && (<><dt>{t.stock.eventStockSales}</dt><dd className="text-right">{money(summary.stockSales)}</dd></>)}
+          {(summary.stockSales > 0 || summary.stockProfit !== 0) && (<><dt className="font-bold">{t.stock.eventStockProfit}</dt><dd className="text-right font-bold">{money(summary.stockProfit)}</dd></>)}
         </dl>
       </section>
 

@@ -93,6 +93,52 @@ export const events = pgTable("events", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Ready stock: things she has in hand to sell again (bought extra on a trip, or left over), at a
+ * bazaar, wholesale, or in a client's order. What is left is never stored: it is worked out from
+ * the moves below and the order lines that use the item (src/lib/stock.ts).
+ */
+export const stockItems = pgTable("stock_items", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  store: text("store").notNull().default(""),
+  /** What one unit cost her (modal), for the profit. */
+  unitCost: money("unit_cost").notNull(),
+  /** Her usual selling price for one unit; a sale or an order line may use another. */
+  price: money("price").notNull(),
+  /** The trip it was bought on, if any. */
+  eventId: integer("event_id").references(() => events.id, { onDelete: "set null" }),
+  note: text("note").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** added: more in hand; sale: sold directly (at a bazaar, without an order); adjusted: a recount. */
+export const STOCK_MOVE_KINDS = ["added", "sale", "adjusted"] as const;
+export type StockMoveKind = (typeof STOCK_MOVE_KINDS)[number];
+
+/** Every change to an item's stock outside orders. quantity is signed: + in, − out. */
+export const stockMoves = pgTable(
+  "stock_moves",
+  {
+    id: serial("id").primaryKey(),
+    stockItemId: integer("stock_item_id")
+      .notNull()
+      .references(() => stockItems.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: STOCK_MOVE_KINDS }).notNull(),
+    quantity: integer("quantity").notNull(),
+    /** sale: the price per unit and how it was paid. */
+    unitPrice: money("unit_price"),
+    method: text("method", { enum: ["transfer", "qris", "cash"] }),
+    /** sale: the bazaar or wholesale event it was sold at. */
+    eventId: integer("event_id").references(() => events.id, { onDelete: "set null" }),
+    movedOn: date("moved_on").notNull(),
+    note: text("note").notNull().default(""),
+    createdBy: integer("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("stock_moves_item_idx").on(t.stockItemId), index("stock_moves_event_idx").on(t.eventId)],
+);
+
 /** Where an item is: asked for, bought, arrived with her, packed, sent to the client, or sold out. */
 export const ITEM_STATUSES = ["requested", "bought", "arrived", "packed", "shipped", "sold_out"] as const;
 export type ItemStatus = (typeof ITEM_STATUSES)[number];
@@ -177,9 +223,11 @@ export const orderItems = pgTable(
     soldOutResolution: text("sold_out_resolution", { enum: SOLD_OUT_RESOLUTIONS }),
     /** The sold-out item this one replaces. */
     replacesItemId: integer("replaces_item_id"),
+    /** Taken from ready stock: already in hand, and counted out of that item's stock. */
+    stockItemId: integer("stock_item_id").references(() => stockItems.id, { onDelete: "restrict" }),
     statusChangedAt: timestamp("status_changed_at", { withTimezone: true }),
   },
-  (t) => [index("order_items_order_idx").on(t.orderId)],
+  (t) => [index("order_items_order_idx").on(t.orderId), index("order_items_stock_idx").on(t.stockItemId)],
 );
 
 /** The last order number used per year. */
@@ -242,4 +290,6 @@ export type Client = typeof clients.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type ShopEvent = typeof events.$inferSelect;
+export type StockItem = typeof stockItems.$inferSelect;
+export type StockMove = typeof stockMoves.$inferSelect;
 export type BusinessSettings = typeof businessSettings.$inferSelect;

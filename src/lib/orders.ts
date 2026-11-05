@@ -10,6 +10,7 @@ import { escapeLike, fieldErrors } from "@/lib/clients";
 import { parsePercent, parseRupiah } from "@/lib/money";
 import { FEE_MODES, priceOrder, type Fee, type PricingInput } from "@/lib/pricing";
 import { getSettings, type FieldErrors } from "@/lib/settings";
+import { checkOrderStock, stockAllows } from "@/lib/stock";
 
 const MAX_ITEMS = 50;
 
@@ -32,6 +33,8 @@ const itemSchema = z
   .object({
     /** An existing line being edited (keeps its status); absent for a new line. */
     id: z.number().int().positive().optional(),
+    /** Taken from ready stock (src/lib/stock.ts); absent for something to buy. */
+    stockItemId: z.number().int().positive().nullable().optional(),
     name: z.string().trim().min(1, "required").max(120, "too_long"),
     store: z.string().trim().max(80, "too_long"),
     quantity: z.coerce.number().int("invalid_quantity").min(1, "invalid_quantity").max(999, "invalid_quantity"),
@@ -72,7 +75,7 @@ const itemSchema = z
       default:
         fee = { mode: "nett" };
     }
-    return { id: item.id, name: item.name, store: item.store, quantity: item.quantity, unitPrice: item.unitPrice ?? 0, fee };
+    return { id: item.id, stockItemId: item.stockItemId ?? null, name: item.name, store: item.store, quantity: item.quantity, unitPrice: item.unitPrice ?? 0, fee };
   });
 
 export const orderSchema = z
@@ -120,16 +123,40 @@ async function prepare(db: Db, input: OrderInput, existing?: Existing) {
     if (!event) return { ok: false as const, errors: { eventId: "required" } };
     if (event.closedAt && order.eventId !== existing?.eventId) return { ok: false as const, errors: { eventId: "event_closed" } };
   }
-  const status = (item: { id?: number }): ItemStatus => (item.id && existing?.items.get(item.id)?.status) || "requested";
+  // A new line from ready stock is already in hand; an edited line keeps its status.
+  const status = (item: { id?: number; stockItemId: number | null }): ItemStatus =>
+    (item.id && existing?.items.get(item.id)?.status) || (item.stockItemId ? "arrived" : "requested");
+  const statuses = order.items.map(status);
   const voucher = order.applyVoucher ? (await getSettings(db)).voucherAmount : 0;
   const pricing: PricingInput = {
-    items: order.items.map((item) => ({ quantity: item.quantity, unitPrice: item.unitPrice, fee: item.fee, soldOut: status(item) === "sold_out" })),
+    items: order.items.map((item, i) => ({ quantity: item.quantity, unitPrice: item.unitPrice, fee: item.fee, soldOut: statuses[i] === "sold_out" })),
     bundles: order.bundles.map((b) => ({ key: b.key, fee: b.fee ?? 0 })),
     discount: order.discount ?? 0,
     voucher,
     shipping: order.shipping,
   };
-  return { ok: true as const, order, priced: priceOrder(pricing), existing };
+  return { ok: true as const, order, statuses, priced: priceOrder(pricing), existing };
+}
+
+/** An order line asks for more ready stock than is left: the transaction is rolled back. */
+class StockShortage extends Error {
+  constructor(readonly errors: FieldErrors) {
+    super("not enough stock");
+  }
+}
+
+async function reserveStock(tx: Db, { order, statuses }: Prepared, orderId?: number) {
+  const errors = await checkOrderStock(tx, order.items.map((item, i) => ({ stockItemId: item.stockItemId, quantity: item.quantity, status: statuses[i] })), orderId);
+  if (errors) throw new StockShortage(errors);
+}
+
+async function unlessShort(write: () => Promise<OrderResult>): Promise<OrderResult> {
+  try {
+    return await write();
+  } catch (e) {
+    if (e instanceof StockShortage) return { ok: false, errors: e.errors };
+    throw e;
+  }
 }
 
 type Prepared = Extract<Awaited<ReturnType<typeof prepare>>, { ok: true }>;
@@ -143,10 +170,11 @@ const lineFields = (item: Prepared["order"]["items"][number], bundleIds: Map<str
   feeAmount: item.fee.mode === "per_item" ? item.fee.amount : null,
   feeBasisPoints: item.fee.mode === "percent" ? item.fee.basisPoints : null,
   bundleId: item.fee.mode === "bundle" ? bundleIds.get(item.fee.bundle)! : null,
+  stockItemId: item.stockItemId,
 });
 
 /** Bundles are written afresh; existing lines are updated in place (keeping status), new ones added, removed ones deleted. */
-async function writeLines(tx: Db, orderId: number, { order, priced, existing }: Prepared) {
+async function writeLines(tx: Db, orderId: number, { order, statuses, priced, existing }: Prepared) {
   await tx.delete(orderBundles).where(eq(orderBundles.orderId, orderId));
   const bundleIds = new Map<string, number>();
   for (const [position, bundle] of order.bundles.entries()) {
@@ -163,7 +191,7 @@ async function writeLines(tx: Db, orderId: number, { order, priced, existing }: 
       kept.add(item.id);
       await tx.update(orderItems).set(values).where(eq(orderItems.id, item.id));
     } else {
-      await tx.insert(orderItems).values({ orderId, ...values });
+      await tx.insert(orderItems).values({ orderId, ...values, status: statuses[position] });
     }
   }
   const removed = [...(existing?.items.keys() ?? [])].filter((id) => !kept.has(id));
@@ -193,7 +221,8 @@ function jakartaYear(now: Date) {
 export async function createOrder(db: Db, input: OrderInput, userId: number | null, now = new Date()): Promise<OrderResult> {
   const prepared = await prepare(db, input);
   if (!prepared.ok) return prepared;
-  return db.transaction(async (tx) => {
+  return unlessShort(() => db.transaction(async (tx) => {
+    await reserveStock(tx as unknown as Db, prepared);
     const year = jakartaYear(now);
     // One row per year, incremented under its row lock: numbers are unique and never reused.
     const [counter] = await tx
@@ -208,7 +237,7 @@ export async function createOrder(db: Db, input: OrderInput, userId: number | nu
       .returning({ id: orders.id });
     await writeLines(tx as unknown as Db, order.id, prepared);
     return { ok: true as const, id: order.id, number };
-  });
+  }));
 }
 
 /** Updates the order's lines (each keeps its status), bundles and amounts; its number stays. */
@@ -218,15 +247,16 @@ export async function updateOrder(db: Db, id: number, input: OrderInput): Promis
   const lines = await db.select({ id: orderItems.id, status: orderItems.status }).from(orderItems).where(eq(orderItems.orderId, id));
   const prepared = await prepare(db, input, { orderId: id, eventId: current.eventId, items: new Map(lines.map((l) => [l.id, l])) });
   if (!prepared.ok) return prepared;
-  await db.transaction(async (tx) => {
+  return unlessShort(() => db.transaction(async (tx) => {
     await tx.execute(sql`SELECT 1 FROM orders WHERE id = ${id} FOR UPDATE`);
+    await reserveStock(tx as unknown as Db, prepared, id);
     await tx
       .update(orders)
       .set({ clientId: prepared.order.clientId, updatedAt: new Date(), ...totals(prepared) })
       .where(eq(orders.id, id));
     await writeLines(tx as unknown as Db, id, prepared);
-  });
-  return { ok: true, id, number: current.number };
+    return { ok: true as const, id, number: current.number };
+  }));
 }
 
 /** Prices a saved order again from its stored lines, e.g. after an item sold out or was replaced. */
@@ -273,12 +303,14 @@ async function changeLine(db: Db, orderId: number, itemId: number, change: (tx: 
 
 /**
  * Moves an item along: requested → bought → arrived → packed → shipped, or to sold_out (then it
- * waits for the client's answer and is not charged). Any step can be undone.
+ * waits for the client's answer and is not charged). Any step can be undone, except bringing back a
+ * sold-out line from ready stock once that stock has been sold to someone else.
  */
 export async function setItemStatus(db: Db, orderId: number, itemId: number, status: ItemStatus) {
   if (!ITEM_STATUSES.includes(status)) return false;
   return changeLine(db, orderId, itemId, async (tx, item) => {
     if (item.status === status) return true;
+    if (item.stockItemId && item.status === "sold_out" && !(await stockAllows(tx, item.stockItemId, item.quantity))) return false;
     await tx
       .update(orderItems)
       .set({ status, soldOutResolution: status === "sold_out" ? "waiting" : null, statusChangedAt: new Date() })
@@ -325,6 +357,8 @@ export async function replaceSoldOut(
       soldOutResolution: null,
       statusChangedAt: new Date(),
       replacesItemId: item.id,
+      // A replacement is something else, bought for the client.
+      stockItemId: null,
     });
     await tx.update(orderItems).set({ soldOutResolution: "replaced", statusChangedAt: new Date() }).where(eq(orderItems.id, item.id));
     return true;
