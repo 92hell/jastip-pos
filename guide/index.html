@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Cara pakai aplikasi jastip Titip Laili Yuk, langkah demi langkah, dengan kotak ulasan per langkah.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#9fd8fd">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Panduan Titip Laili Yuk">
+<meta property="og:description" content="Cara pakai aplikasi jastip Titip Laili Yuk, langkah demi langkah, dengan kotak ulasan per langkah.">
+<meta property="og:url" content="https://92hell.github.io/jastip-pos/panduan/">
+<meta property="og:image" content="https://92hell.github.io/jastip-pos/icon-512.png">
+<link rel="icon" href="../icon-192.png">
+<title>Panduan Titip Laili Yuk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one reading column like the app's own pages; each step is a white card on the sky ground,
+   its screenshots beside the text on wide screens and below it on a phone. Brand = the app's tokens. */
+:root {
+  --ground: #e6f4fe;
+  --card: #ffffff;
+  --ink: #13212b;
+  --muted: #4c6170;
+  --line: #c9e2f3;
+  --sky: #9fd8fd;
+  --primary: #0a5a8c;
+  --primary-ink: #ffffff;
+  --own: #0a5a8c;
+  --demo: #7a4b00;
+  --demo-bg: #fdf1d6;
+  --ok: #19733f;
+  --display: "Gochi Hand", "Comic Sans MS", cursive;
+  --body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0d1922; --card: #15252f; --ink: #e4eff7; --muted: #9db3c3; --line: #25404f;
+    --sky: #1f5a7d; --primary: #7cc4f5; --primary-ink: #0d1922; --own: #7cc4f5;
+    --demo: #f5c96b; --demo-bg: #3a2c10; --ok: #6fd39a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0d1922; --card: #15252f; --ink: #e4eff7; --muted: #9db3c3; --line: #25404f;
+  --sky: #1f5a7d; --primary: #7cc4f5; --primary-ink: #0d1922; --own: #7cc4f5;
+  --demo: #f5c96b; --demo-bg: #3a2c10; --ok: #6fd39a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+a { color: var(--primary); font-weight: 700; }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 28px 120px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.3rem, 7vw, 3.4rem); }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.55rem; }
+p { margin: 0; }
+.brand { display: inline-block; background: var(--sky); color: var(--ink); font-family: var(--display); font-size: 1.3rem; padding: 2px 14px; border-radius: 999px; }
+.hero { display: grid; gap: 12px; }
+.hero p { max-width: 62ch; font-size: 1.08rem; }
+.places { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.place { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 6px; min-width: 0; }
+.place .tag { font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.place.own .tag { color: var(--own); }
+.place.demo .tag { color: var(--demo); }
+.place a { word-break: break-all; }
+.place small { color: var(--muted); }
+.part { display: grid; gap: 16px; }
+.part-head { display: grid; gap: 10px; padding-top: 8px; border-top: 2px dashed var(--line); }
+.part-intro { display: grid; gap: 12px; grid-template-columns: 1fr; }
+.part-intro p { max-width: 62ch; }
+@media (min-width: 700px) { .part-intro:has(.lead-shot) { grid-template-columns: 1fr 180px; align-items: start; } }
+.task { background: var(--card); border-radius: 22px; padding: 18px; display: grid; gap: 14px; scroll-margin-top: 16px; }
+.task-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.num { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--sky); color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; flex: none; }
+.task.done .num { background: var(--ok); color: var(--card); }
+.task-head h3 { flex: 1 1 auto; min-width: 0; }
+.where { font-size: .78rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; border: 1.5px solid currentColor; }
+.where-own { color: var(--own); }
+.where-demo { color: var(--demo); background: var(--demo-bg); }
+.task-body { display: grid; gap: 16px; }
+@media (min-width: 700px) { .task-body:has(.shots) { grid-template-columns: minmax(0, 1fr) auto; align-items: start; } }
+.text { display: grid; gap: 10px; min-width: 0; }
+.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.steps li::marker { color: var(--muted); font-weight: 700; }
+.tip { background: var(--ground); border-radius: 12px; padding: 10px 12px; font-size: .95rem; }
+.shots { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.shot { border: 1px solid var(--line); background: var(--ground); padding: 0; border-radius: 14px; overflow: hidden; cursor: zoom-in; flex: none; width: 150px; }
+.shot img { display: block; width: 100%; height: auto; }
+.lead-shot .shot { width: 180px; }
+.review { border: 0; margin: 0; padding: 14px 0 0; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.review legend { font-weight: 800; padding: 0; float: left; width: 100%; margin-bottom: 8px; }
+.review legend + * { clear: both; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { position: relative; }
+.pill input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.pill span { display: inline-block; padding: 7px 16px; border-radius: 999px; border: 2px solid var(--line); font-weight: 700; }
+.pill input:checked + span { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.pill input:focus-visible + span { outline: 3px solid var(--primary); outline-offset: 2px; }
+.note-label { font-weight: 700; font-size: .95rem; }
+.opt { color: var(--muted); font-weight: 400; }
+textarea { width: 100%; font: inherit; color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; resize: vertical; }
+textarea::placeholder { color: var(--muted); opacity: .8; }
+.final { background: var(--card); border-radius: 22px; padding: 18px; display: grid; gap: 16px; scroll-margin-top: 16px; }
+.q { display: grid; gap: 6px; }
+.q label, .q legend { font-weight: 700; }
+.q fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+.send { display: grid; gap: 10px; padding-top: 6px; border-top: 1px solid var(--line); }
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-weight: 800; border-radius: 999px; padding: 11px 20px; cursor: pointer; text-decoration: none; border: 2px solid var(--primary); }
+.btn.primary { background: var(--primary); color: var(--primary-ink); }
+.btn.ghost { background: transparent; color: var(--primary); }
+#preview { font-size: .9rem; min-height: 9em; background: var(--ground); }
+.status { min-height: 1.4em; font-weight: 700; color: var(--ok); }
+.muted { color: var(--muted); font-size: .92rem; }
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--card); border-top: 1px solid var(--line); padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.bar-inner { max-width: 860px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+.meter { flex: 1; display: grid; gap: 4px; min-width: 0; }
+.meter-track { height: 8px; border-radius: 99px; background: var(--ground); overflow: hidden; }
+.meter-fill { height: 100%; width: 0; background: var(--ok); border-radius: 99px; transition: width .3s; }
+.meter-text { font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bar .btn { padding: 8px 16px; flex: none; }
+dialog { border: 0; padding: 0; background: transparent; max-width: min(92vw, 460px); }
+dialog::backdrop { background: rgb(0 0 0 / .7); }
+dialog img { display: block; width: 100%; height: auto; max-height: 86vh; object-fit: contain; border-radius: 16px; }
+dialog form { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+@media (prefers-reduced-motion: reduce) { .meter-fill { transition: none; } }
+</style>
+
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <span class="brand">titiplailiyuk</span>
+    <h1>Panduan Titip Laili Yuk</h1>
+    <p>Halo Laili! Ini aplikasi jastip yang Helmi buatkan buat kamu: pesanan, fee, DP, daftar belanja, dan invoice untuk klien, semua di HP. Coba langkah-langkah di bawah. Tiap langkah ada kotak <b>Gimana rasanya?</b>: isi sambil mencoba, lalu kirim semua ulasanmu ke Helmi lewat WhatsApp di bagian paling bawah.</p>
+    <div class="places">
+      <div class="place own">
+        <span class="tag">Aplikasimu sendiri</span>
+        <a href="https://titip-laili.onrender.com">titip-laili.onrender.com</a>
+        <small>Untuk klien beneran. Masuk sebagai <b>laili</b>.</small>
+      </div>
+      <div class="place demo">
+        <span class="tag">Demo untuk latihan</span>
+        <a href="https://92hell.github.io/jastip-pos/">92hell.github.io/jastip-pos</a>
+        <small>Bebas dicoba, isinya contoh. Tidak perlu kata sandi.</small>
+      </div>
+    </div>
+    <p class="muted">Kedua alamat pakai server gratis yang tidur kalau tidak dipakai: pembukaan pertama bisa sampai 1 menit. Setelah itu cepat.</p>
+  </header>
+
+  
+  <section class="part" aria-labelledby="h-siapkan">
+    <div class="part-head">
+      <h2 id="h-siapkan">Siapkan aplikasimu</h2>
+      <div class="part-intro"><p>Tiga hal ini dikerjakan sekali saja, di aplikasimu sendiri.</p></div>
+    </div>
+    
+    <article class="task" id="pasang" data-task="pasang" data-title="Pasang di HP">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">1</span>
+        <h3>Pasang di HP</h3>
+        <span class="where where-own">Di aplikasimu</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Buka <a href="https://titip-laili.onrender.com">titip-laili.onrender.com</a> di Chrome. Kalau lama, tunggu sampai 1 menit: server gratisnya sedang bangun.</li><li>Masuk dengan nama pengguna <b>laili</b> dan kata sandi dari Helmi.</li><li>Ketuk <b>Lainnya</b> (pojok kanan bawah) → <b>Pasang aplikasi</b>. Bisa juga dari menu Chrome ⋮ → <b>Instal aplikasi</b>.</li><li>Sekarang ada ikon <b>TLY</b> di layar HP. Buka aplikasinya dari ikon itu.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/more.jpg" aria-label="Perbesar: Halaman Lainnya: Pengaturan toko, Ganti kata sandi, Pasang aplikasi"><img src="img/more.jpg" alt="Halaman Lainnya: Pengaturan toko, Ganti kata sandi, Pasang aplikasi" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-pasang" id="r-pasang-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-pasang" id="r-pasang-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-pasang" id="r-pasang-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-pasang">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-pasang" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="sandi" data-task="sandi" data-title="Ganti kata sandi">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">2</span>
+        <h3>Ganti kata sandi</h3>
+        <span class="where where-own">Di aplikasimu</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li><b>Lainnya</b> → <b>Ganti kata sandi</b>.</li><li>Isi kata sandi sekarang, lalu kata sandi baru dua kali. Minimal 12 karakter: kalimat pendek gampang diingat, misalnya <i>kopi susu gula aren</i>.</li><li>HP atau komputer lain yang masuk dengan akunmu otomatis keluar.</li></ol><p class="tip">Lupa kata sandi? Bilang Helmi: dia bisa mengembalikannya dari pengaturan server.</p></div>
+        
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-sandi" id="r-sandi-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-sandi" id="r-sandi-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-sandi" id="r-sandi-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-sandi">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-sandi" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="toko" data-task="toko" data-title="Isi pengaturan toko">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">3</span>
+        <h3>Isi pengaturan toko</h3>
+        <span class="where where-own">Di aplikasimu</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li><b>Lainnya</b> → <b>Pengaturan toko</b>.</li><li>Isi nomor WhatsApp toko, rekening pembayaran (sampai 5), aturan jastip, dan nominal voucher tag Instagram.</li><li>Rekening ini yang muncul di invoice klien. Cek juga halaman tokomu di <a href="https://titip-laili.onrender.com/id">titip-laili.onrender.com/id</a>.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/settings.jpg" aria-label="Perbesar: Pengaturan toko: rekening pembayaran"><img src="img/settings.jpg" alt="Pengaturan toko: rekening pembayaran" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-toko" id="r-toko-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-toko" id="r-toko-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-toko" id="r-toko-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-toko">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-toko" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+  </section>
+  <section class="part" aria-labelledby="h-latihan">
+    <div class="part-head">
+      <h2 id="h-latihan">Latihan alur jastip</h2>
+      <div class="part-intro"><p>Bagian ini paling enak dicoba di <a href="https://92hell.github.io/jastip-pos/">demo</a>: ketuk <b>Coba sebagai admin</b>, lalu bebas klik apa saja. Klien dan rekening di demo cuma contoh. Data demo kembali seperti semula kalau demonya tidak dipakai sekitar 15 menit, jadi coba berurutan dalam satu waktu.</p><div class="shots lead-shot"><button type="button" class="shot" data-src="img/login.jpg" aria-label="Perbesar: Halaman masuk demo dengan tombol Coba sebagai admin"><img src="img/login.jpg" alt="Halaman masuk demo dengan tombol Coba sebagai admin" loading="lazy" width="620" height="1263"></button></div></div>
+    </div>
+    
+    <article class="task" id="klien" data-task="klien" data-title="Tambah klien">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">4</span>
+        <h3>Tambah klien</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Tab <b>Klien</b> → <b>Tambah klien</b>.</li><li>Nomor WhatsApp boleh ditulis sesukanya: 0812-…, +62 812…, atau 62812…. Nomor yang sama tidak bisa dipakai dua klien.</li><li>Centang <b>Reseller</b> kalau kliennya reseller. Fee tetap diatur per pesanan.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/client-new.jpg" aria-label="Perbesar: Form klien baru"><img src="img/client-new.jpg" alt="Form klien baru" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-klien" id="r-klien-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-klien" id="r-klien-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-klien" id="r-klien-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-klien">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-klien" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="event" data-task="event" data-title="Bikin event">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">5</span>
+        <h3>Bikin event</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Tab <b>Event</b> → <b>Event baru</b>.</li><li>Pilih jenisnya: Trip / Open PO, Bazaar, Grosir, atau Lainnya. Isi tanggal dan batas order.</li><li>Di halaman event ada ringkasan: jumlah pesanan, fee, yang sudah dan belum dibayar. <b>Tutup order</b> kalau PO sudah selesai.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/event-new.jpg" aria-label="Perbesar: Form event baru"><img src="img/event-new.jpg" alt="Form event baru" loading="lazy" width="620" height="1263"></button><button type="button" class="shot" data-src="img/event.jpg" aria-label="Perbesar: Halaman event dengan ringkasan"><img src="img/event.jpg" alt="Halaman event dengan ringkasan" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-event" id="r-event-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-event" id="r-event-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-event" id="r-event-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-event">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-event" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="pesanan" data-task="pesanan" data-title="Bikin pesanan">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">6</span>
+        <h3>Bikin pesanan</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Tab <b>Pesanan</b> → <b>Pesanan baru</b> (bisa juga dari halaman klien atau event). Pilih klien dan event.</li><li>Tiap barang: nama, toko, jumlah, harga. Harga boleh ditulis seperti di chat: <b>350.000</b>, <b>25rb</b>, <b>1,5jt</b>.</li><li>Pilih fee jastip tiap barang: fee per barang, persen dari harga, NETT (sudah termasuk fee), atau ikut bundling (satu fee untuk beberapa barang).</li><li>Lalu diskon, voucher tag IG, ongkir (boleh dikosongkan dulu), dan DP %. Totalnya dihitung langsung selagi mengetik.</li></ol><p class="tip">Coba masukkan satu pesanan yang pernah kamu hitung di chat. Totalnya sama?</p></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/order-items.jpg" aria-label="Perbesar: Barang dengan fee per barang 15rb"><img src="img/order-items.jpg" alt="Barang dengan fee per barang 15rb" loading="lazy" width="620" height="1263"></button><button type="button" class="shot" data-src="img/order-summary.jpg" aria-label="Perbesar: Ringkasan: voucher, ongkir belum diisi, total"><img src="img/order-summary.jpg" alt="Ringkasan: voucher, ongkir belum diisi, total" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-pesanan" id="r-pesanan-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-pesanan" id="r-pesanan-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-pesanan" id="r-pesanan-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-pesanan">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-pesanan" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="belanja" data-task="belanja" data-title="Pakai daftar belanja">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">7</span>
+        <h3>Pakai daftar belanja</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Buka event → <b>Daftar belanja</b>. Barangnya dikelompokkan per toko, lengkap dengan nama kliennya.</li><li>Ketuk <b>Sudah dibeli</b> untuk barang yang sudah di tangan.</li><li>Coba tanpa sinyal: buka daftarnya sekali waktu ada sinyal, nyalakan mode pesawat, centang beberapa barang, lalu matikan mode pesawat. Centangnya terkirim sendiri.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/shopping.jpg" aria-label="Perbesar: Daftar belanja per toko"><img src="img/shopping.jpg" alt="Daftar belanja per toko" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-belanja" id="r-belanja-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-belanja" id="r-belanja-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-belanja" id="r-belanja-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-belanja">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-belanja" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="soldout" data-task="soldout" data-title="Barang sold out">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">8</span>
+        <h3>Barang sold out</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Di daftar belanja ketuk <b>Sold out</b> (atau ubah status barang di pesanan). Barang itu langsung tidak ditagih.</li><li>Ketuk <b>Kabari klien</b>: WhatsApp terbuka dengan pesan yang sudah siap kirim.</li><li>Setelah klien jawab: <b>Ganti dengan yang mirip</b> (isi barang penggantinya) atau <b>Dibatalkan</b>.</li><li>Kalau barangnya sudah dibayar, kelebihannya bisa dikembalikan atau disimpan jadi kredit untuk pesanan berikutnya.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/soldout.jpg" aria-label="Perbesar: Barang sold out menunggu jawaban klien"><img src="img/soldout.jpg" alt="Barang sold out menunggu jawaban klien" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-soldout" id="r-soldout-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-soldout" id="r-soldout-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-soldout" id="r-soldout-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-soldout">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-soldout" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="bayar" data-task="bayar" data-title="Catat pembayaran">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">9</span>
+        <h3>Catat pembayaran</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Buka pesanan → <b>Catat pembayaran</b>. Jumlahnya sudah terisi sisa tagihan.</li><li>Pilih cara bayar (transfer, QRIS, tunai, kredit klien) dan tanggal. Foto bukti transfer boleh dilampirkan; hanya kamu yang bisa melihatnya.</li><li>Status pesanan berubah sendiri: Belum bayar, DP lunas, atau Lunas.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/payment.jpg" aria-label="Perbesar: Pembayaran: DP lunas dan form catat pembayaran"><img src="img/payment.jpg" alt="Pembayaran: DP lunas dan form catat pembayaran" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-bayar" id="r-bayar-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-bayar" id="r-bayar-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-bayar" id="r-bayar-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-bayar">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-bayar" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="invoice" data-task="invoice" data-title="Kirim invoice">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">10</span>
+        <h3>Kirim invoice</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Di pesanan, ketuk <b>Kirim invoice</b>: WhatsApp terbuka dengan pesan dan link invoice.</li><li>Coba kirim ke nomormu sendiri lalu buka linknya. Itu yang dilihat klien: barang dan statusnya, total, yang sudah dibayar, dan rekening tujuan. Alamat dan catatanmu tidak ikut.</li><li>Kalau linknya tersebar ke orang lain, ketuk <b>Buat link baru</b>: link lama langsung tidak berlaku.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/invoice-share.jpg" aria-label="Perbesar: Link invoice dengan tombol Kirim invoice"><img src="img/invoice-share.jpg" alt="Link invoice dengan tombol Kirim invoice" loading="lazy" width="620" height="1263"></button><button type="button" class="shot" data-src="img/invoice.jpg" aria-label="Perbesar: Invoice yang dilihat klien"><img src="img/invoice.jpg" alt="Invoice yang dilihat klien" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-invoice" id="r-invoice-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-invoice" id="r-invoice-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-invoice" id="r-invoice-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-invoice">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-invoice" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="kirim" data-task="kirim" data-title="Ubah status dan kirim">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">11</span>
+        <h3>Ubah status dan kirim</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Di pesanan, ubah status tiap barang: Dipesan → Sudah dibeli → Sudah sampai → Dikemas → Dikirim. Salah pencet bisa dikembalikan.</li><li>Isi kurir dan nomor resi, lalu <b>Tandai dikirim</b>. Klien melihat status dan resinya di invoice.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/order.jpg" aria-label="Perbesar: Pesanan dengan status per barang"><img src="img/order.jpg" alt="Pesanan dengan status per barang" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-kirim" id="r-kirim-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-kirim" id="r-kirim-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-kirim" id="r-kirim-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-kirim">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-kirim" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="beranda" data-task="beranda" data-title="Cek beranda">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">12</span>
+        <h3>Cek beranda</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li><b>Beranda</b> merangkum yang perlu dikerjakan: barang belum dibeli per event, sold out yang menunggu jawaban, yang perlu dikemas dan dikirim, DP yang kurang.</li><li>Di atasnya: uang yang belum dibayar klien, uang masuk bulan ini, dan fee jastip bulan ini.</li><li>Ketuk barisnya untuk langsung ke tempat mengerjakannya.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/dashboard.jpg" aria-label="Perbesar: Beranda: uang dan yang perlu dikerjakan"><img src="img/dashboard.jpg" alt="Beranda: uang dan yang perlu dikerjakan" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-beranda" id="r-beranda-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-beranda" id="r-beranda-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-beranda" id="r-beranda-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-beranda">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-beranda" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+  </section>
+  <section class="part" aria-labelledby="h-stok">
+    <div class="part-head">
+      <h2 id="h-stok">Stok ready</h2>
+      <div class="part-intro"><p>Barang yang sudah di tangan untuk dijual lagi: lebihan belanja trip atau sisa stok. Di HP ada di <b>Lainnya</b> → <b>Stok ready</b>; di komputer, menu <b>Stok</b>. Sisa stok dihitung sendiri, dan tidak bisa terjual lebih dari yang ada.</p></div>
+    </div>
+    
+    <article class="task" id="stok-tambah" data-task="stok-tambah" data-title="Catat barang stok">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">13</span>
+        <h3>Catat barang stok</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li><b>Stok ready</b> → <b>+ Barang stok</b>.</li><li>Isi nama, merek atau toko, jumlah, <b>modal per barang</b> (harga belinya) dan <b>harga jual</b> biasanya.</li><li>Di atas daftar terlihat nilai stok (modal), yang sudah terjual, hasil penjualan, dan untungnya.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/stock-list.jpg" aria-label="Perbesar: Daftar stok ready dengan ringkasan nilai, terjual, dan untung"><img src="img/stock-list.jpg" alt="Daftar stok ready dengan ringkasan nilai, terjual, dan untung" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-stok-tambah" id="r-stok-tambah-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-stok-tambah" id="r-stok-tambah-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-stok-tambah" id="r-stok-tambah-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-stok-tambah">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-stok-tambah" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="stok-jual" data-task="stok-jual" data-title="Jual langsung di bazaar">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">14</span>
+        <h3>Jual langsung di bazaar</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Buka barangnya → <b>Jual langsung</b>: jumlah, harga, cara bayar (tunai, QRIS, transfer), dan event bazaarnya. Tidak perlu data pembeli.</li><li>Dari halaman event bazaar juga bisa: ketuk <b>Jual dari stok</b>.</li><li>Salah catat? Di <b>Riwayat</b> ketuk <b>Batalkan</b>: stoknya kembali. Ada yang rusak atau hilang? Pakai <b>Hitung ulang</b> dengan alasannya.</li></ol><p class="tip">Coba jual 2 Kinder Bueno di Bazaar AEON BSD, lalu buka halaman bazaarnya: penjualan dan untungnya ikut di ringkasan event.</p></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/stock-sell.jpg" aria-label="Perbesar: Form jual langsung dengan event Bazaar AEON BSD"><img src="img/stock-sell.jpg" alt="Form jual langsung dengan event Bazaar AEON BSD" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-stok-jual" id="r-stok-jual-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-stok-jual" id="r-stok-jual-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-stok-jual" id="r-stok-jual-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-stok-jual">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-stok-jual" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+    <article class="task" id="stok-pesanan" data-task="stok-pesanan" data-title="Masukkan stok ke pesanan">
+      <header class="task-head">
+        <span class="num" aria-hidden="true">15</span>
+        <h3>Masukkan stok ke pesanan</h3>
+        <span class="where where-demo">Di demo</span>
+      </header>
+      <div class="task-body">
+        <div class="text"><ol class="steps"><li>Di <b>Pesanan baru</b>, pilih barang di <b>Ambil dari stok ready</b> lalu <b>+ Tambahkan</b>.</li><li>Barangnya langsung berstatus sudah sampai (tidak masuk daftar belanja), dengan harga jual biasa dan NETT. Untuk reseller, ubah saja harganya.</li><li>Kalau jumlahnya melebihi sisa stok, pesanan tidak bisa disimpan dan kolom jumlahnya ditandai.</li></ol></div>
+        <div class="shots"><button type="button" class="shot" data-src="img/stock-order.jpg" aria-label="Perbesar: Barang dari stok ready di form pesanan"><img src="img/stock-order.jpg" alt="Barang dari stok ready di form pesanan" loading="lazy" width="620" height="1263"></button></div>
+      </div>
+      <fieldset class="review">
+        <legend>Gimana rasanya?</legend>
+        <div class="pills"><label class="pill"><input type="radio" name="r-stok-pesanan" id="r-stok-pesanan-gampang" value="gampang"><span>Gampang</span></label><label class="pill"><input type="radio" name="r-stok-pesanan" id="r-stok-pesanan-lumayan" value="lumayan"><span>Lumayan</span></label><label class="pill"><input type="radio" name="r-stok-pesanan" id="r-stok-pesanan-bingung" value="bingung"><span>Bingung</span></label></div>
+        <label class="note-label" for="n-stok-pesanan">Catatan <span class="opt">(boleh kosong)</span></label>
+        <textarea id="n-stok-pesanan" rows="2" placeholder="Misalnya: tombolnya susah dicari, atau istilahnya beda dari yang biasa aku pakai"></textarea>
+      </fieldset>
+    </article>
+  </section>
+  <section class="final" id="kirim" aria-labelledby="h-final">
+    <h2 id="h-final">Kesan keseluruhan</h2>
+    <div class="q"><label for="q-bantu">Apa yang paling membantu?</label><textarea id="q-bantu" rows="3"></textarea></div><div class="q"><label for="q-bingung">Apa yang bikin bingung, lambat, atau beda dari cara kamu biasa kerja?</label><textarea id="q-bingung" rows="3"></textarea></div><div class="q"><label for="q-kurang">Apa yang belum ada tapi kamu butuh?</label><textarea id="q-kurang" rows="3"></textarea></div>
+    <div class="q">
+      <fieldset>
+        <legend>Mau mulai pakai untuk klien beneran?</legend>
+        <div class="pills">
+          <label class="pill"><input type="radio" name="mulai" id="mulai-ya" value="Ya, mau mulai"><span>Ya, mau mulai</span></label>
+          <label class="pill"><input type="radio" name="mulai" id="mulai-nanti" value="Nanti dulu, perbaiki dulu"><span>Nanti dulu, perbaiki dulu</span></label>
+          <label class="pill"><input type="radio" name="mulai" id="mulai-belum" value="Belum cocok"><span>Belum cocok</span></label>
+        </div>
+      </fieldset>
+    </div>
+    <div class="send">
+      <h3>Kirim ke Helmi</h3>
+      <p class="muted">Ulasanmu tersimpan di HP ini saja sampai kamu kirim. Tombol WhatsApp membuka pesan berisi semua ulasan; pilih Helmi lalu kirim.</p>
+      <label class="note-label" for="preview">Isi pesan</label>
+      <textarea id="preview" rows="8" readonly></textarea>
+      <div class="buttons">
+        <a class="btn primary" id="wa" href="https://wa.me/" target="_blank" rel="noopener">Kirim lewat WhatsApp</a>
+        <button type="button" class="btn ghost" id="copy">Salin teks</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+
+<div class="bar">
+  <div class="bar-inner">
+    <div class="meter">
+      <span class="meter-text" id="meter-text">0 dari 15 langkah dinilai</span>
+      <div class="meter-track" aria-hidden="true"><div class="meter-fill" id="meter-fill"></div></div>
+    </div>
+    <a class="btn primary" href="#kirim">Kirim ulasan</a>
+  </div>
+</div>
+
+<dialog id="zoom" aria-label="Gambar diperbesar">
+  <form method="dialog"><button class="btn primary" type="submit">Tutup</button></form>
+  <img id="zoom-img" alt="">
+</dialog>
+
+<script>
+(() => {
+  const KEY = "tly-panduan-v1";
+  const QUESTIONS = [["bantu", "Apa yang paling membantu?"], ["bingung", "Apa yang bikin bingung, lambat, atau beda dari cara kamu biasa kerja?"], ["kurang", "Apa yang belum ada tapi kamu butuh?"]];
+  const RATINGS = {"gampang": "Gampang", "lumayan": "Lumayan", "bingung": "Bingung"};
+  const tasks = [...document.querySelectorAll(".task")];
+  const total = tasks.length;
+
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch { saved = {}; }
+
+  // Put back what was typed on this phone before.
+  for (const el of document.querySelectorAll("textarea[id^='n-'], textarea[id^='q-']")) {
+    if (typeof saved[el.id] === "string") el.value = saved[el.id];
+  }
+  for (const el of document.querySelectorAll("input[type=radio]")) {
+    if (saved[el.name] === el.value) el.checked = true;
+  }
+
+  function collect() {
+    const state = {};
+    for (const el of document.querySelectorAll("textarea[id^='n-'], textarea[id^='q-']")) if (el.value.trim()) state[el.id] = el.value;
+    for (const el of document.querySelectorAll("input[type=radio]:checked")) state[el.name] = el.value;
+    return state;
+  }
+
+  function message(state) {
+    const lines = ["Ulasan aplikasi Titip Laili Yuk", ""];
+    tasks.forEach((t, i) => {
+      const id = t.dataset.task;
+      const rating = state["r-" + id];
+      const note = (state["n-" + id] || "").trim();
+      if (!rating && !note) return;
+      lines.push(`${i + 1}. ${t.dataset.title}: ${rating ? RATINGS[rating] : "belum dinilai"}`);
+      if (note) lines.push(`   ${note.replace(/\n+/g, " ")}`);
+    });
+    const untouched = tasks.filter((t) => !state["r-" + t.dataset.task]).map((t) => tasks.indexOf(t) + 1);
+    if (untouched.length && untouched.length < total) lines.push("", `Belum dinilai: langkah ${untouched.join(", ")}`);
+    const answers = QUESTIONS.map(([k, q]) => [q, (state["q-" + k] || "").trim()]).filter(([, a]) => a);
+    if (answers.length || state.mulai) lines.push("");
+    for (const [q, a] of answers) lines.push(`${q}`, `${a}`, "");
+    if (state.mulai) lines.push(`Mau mulai pakai? ${state.mulai}`);
+    return lines.join("\n").trim();
+  }
+
+  const preview = document.getElementById("preview");
+  const wa = document.getElementById("wa");
+  const meterText = document.getElementById("meter-text");
+  const meterFill = document.getElementById("meter-fill");
+  const status = document.getElementById("status");
+
+  function refresh(store) {
+    const state = collect();
+    let rated = 0;
+    for (const t of tasks) {
+      const done = Boolean(state["r-" + t.dataset.task]);
+      t.classList.toggle("done", done);
+      if (done) rated++;
+    }
+    meterText.textContent = `${rated} dari ${total} langkah dinilai`;
+    meterFill.style.width = `${Math.round((rated / total) * 100)}%`;
+    const text = message(state);
+    const empty = text === "Ulasan aplikasi Titip Laili Yuk";
+    preview.value = empty ? "" : text;
+    preview.placeholder = "Nilai beberapa langkah dulu; pesannya muncul di sini.";
+    wa.href = "https://wa.me/?text=" + encodeURIComponent(empty ? "" : text);
+    if (store) {
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* storage unavailable: still works for this visit */ }
+    }
+  }
+
+  let timer;
+  document.addEventListener("input", (e) => {
+    if (!e.target.matches("textarea:not([readonly]), input[type=radio]")) return;
+    status.textContent = "";
+    clearTimeout(timer);
+    timer = setTimeout(() => refresh(true), e.target.type === "radio" ? 0 : 400);
+  });
+
+  document.getElementById("copy").addEventListener("click", async () => {
+    refresh(true);
+    if (!preview.value) { status.textContent = "Belum ada ulasan untuk disalin."; return; }
+    try {
+      await navigator.clipboard.writeText(preview.value);
+      status.textContent = "Tersalin. Tempel di chat WhatsApp ke Helmi.";
+    } catch {
+      preview.focus();
+      preview.select();
+      status.textContent = "Teksnya sudah dipilih: tekan lama lalu Salin.";
+    }
+  });
+
+  const zoom = document.getElementById("zoom");
+  const zoomImg = document.getElementById("zoom-img");
+  for (const b of document.querySelectorAll(".shot")) {
+    b.addEventListener("click", () => {
+      zoomImg.src = b.dataset.src;
+      zoomImg.alt = b.querySelector("img").alt;
+      if (typeof zoom.showModal === "function") zoom.showModal();
+    });
+  }
+  zoom.addEventListener("click", (e) => { if (e.target === zoom) zoom.close(); });
+
+  refresh(false);
+})();
+</script>
+
+</body>
+</html>
