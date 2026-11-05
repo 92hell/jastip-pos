@@ -3,8 +3,11 @@ import { hash, verify } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import { users, type User } from "@/lib/db/schema";
+import type { LoginLimiter } from "./login-limiter";
+import { deleteOtherSessions } from "./sessions";
 
 export const MIN_PASSWORD = 12;
+export const MAX_PASSWORD = 200;
 
 /** Compared against when the username does not exist, so a wrong username takes as long as a wrong password. */
 let dummyHash: Promise<string> | undefined;
@@ -24,9 +27,52 @@ export async function authenticate(db: Db, username: string, password: string): 
   return (await verify(user.passwordHash, password)) ? user : null;
 }
 
+export type PasswordChange = { current: string; next: string; confirm: string };
+export type PasswordError = "required" | "wrong" | "too_short" | "too_long" | "same" | "mismatch";
+export type PasswordChangeResult =
+  | { ok: true }
+  | { ok: false; blocked?: true; errors: Partial<Record<keyof PasswordChange, PasswordError>> };
+
+/**
+ * Changes a signed-in user's password. The current password is required, and wrong guesses count
+ * towards the same limit as signing in. Every other session of the user ends; the one making the
+ * change (keepToken) stays signed in.
+ */
+export async function changePassword(
+  db: Db,
+  who: { userId: number; username: string; address: string; keepToken: string },
+  input: PasswordChange,
+  limiter: LoginLimiter,
+): Promise<PasswordChangeResult> {
+  const errors: Partial<Record<keyof PasswordChange, PasswordError>> = {};
+  if (!input.current) errors.current = "required";
+  if (!input.next) errors.next = "required";
+  else if (input.next.length < MIN_PASSWORD) errors.next = "too_short";
+  else if (input.next.length > MAX_PASSWORD) errors.next = "too_long";
+  if (!input.confirm) errors.confirm = "required";
+  else if (input.next && input.confirm !== input.next) errors.confirm = "mismatch";
+  if (Object.keys(errors).length > 0) return { ok: false, errors };
+
+  if (limiter.isBlocked(who.username, who.address)) return { ok: false, blocked: true, errors: {} };
+  const [user] = await db.select().from(users).where(eq(users.id, who.userId));
+  if (!user || !(await verify(user.passwordHash, input.current))) {
+    limiter.recordFailure(who.username, who.address);
+    return { ok: false, errors: { current: "wrong" } };
+  }
+  limiter.recordSuccess(who.username, who.address);
+  if (input.next === input.current) return { ok: false, errors: { next: "same" } };
+
+  const passwordHash = await hash(input.next);
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ passwordHash }).where(eq(users.id, user.id));
+    await deleteOtherSessions(tx, user.id, who.keepToken);
+  });
+  return { ok: true };
+}
+
 /**
  * Creates the owner account on first start from OWNER_USERNAME / OWNER_PASSWORD. Once it exists it
- * is left alone: the password is then changed in the app, not by the configuration.
+ * is left alone: the password is then changed in the app (Account page), not by the configuration.
  */
 export async function ensureOwner(
   db: Db,

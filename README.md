@@ -52,8 +52,8 @@ around a generic point-of-sale:
 | The test list is the specification | [docs/TESTING.md](docs/TESTING.md) is generated from the test names, so it cannot drift from what is tested. |
 | Free hosting, honestly handled | Two free Render services (demo and her shop) on free Neon databases; the demo link is a small page on GitHub Pages that wakes it ([docs/DEPLOY.md](docs/DEPLOY.md)). |
 
-**Tested:** 37 unit tests, 49 integration tests against PostgreSQL 17 in Docker with the real
-migrations, 24 end-to-end journeys in a real browser at desktop and phone size, and 6 tests for the
+**Tested:** 37 unit tests, 52 integration tests against PostgreSQL 17 in Docker with the real
+migrations, 25 end-to-end journeys in a real browser at desktop and phone size, and 6 tests for the
 wake-up page; all in CI on every pull request.
 
 ## Screenshots
@@ -99,7 +99,9 @@ Built in milestones, one pull request each:
 - **Shop page** (`/id`, `/en`): name, tagline, location, WhatsApp and Instagram, her jastip rules
   ("NETT" means no fee, shipping Monday–Friday, unboxing video required for complaints) and the
   Instagram-tag voucher.
-- **Sign-in** for Laili (and helpers later). Clients never sign in: they get a private invoice link.
+- **Sign-in** for Laili (and helpers later), and an **Account** page to change the password: it
+  asks for the current one and signs out her other phones and computers. Clients never sign in:
+  they get a private invoice link.
 - **Shop settings**: profile, up to five payment accounts, rules and the voucher amount.
 - **Clients**: name, WhatsApp (any way it is typed: 0812-…, +62 …), address, notes, reseller mark;
   search by name or number; a number another client already has is refused. Deleting a client with
@@ -212,7 +214,10 @@ a PostgreSQL database for the app (`E2E_DATABASE_URL`, default
 - Sessions: 32 random bytes in an `HttpOnly`, `SameSite=Lax` cookie (`Secure` in production); only
   a SHA-256 hash is stored, so a copy of the database cannot be used to sign in. 30 days, extended
   while in use.
-- Sign-in throttled: 5 failures per username and address, 20 per address, within 15 minutes.
+- Sign-in throttled: 5 failures per username and address, 20 per address, within 15 minutes. A
+  wrong current password when changing it counts towards the same limit.
+- Changing the password ends every other session of that account. In the public demo it cannot
+  be changed, so every visitor can sign in.
 - Every page and Server Action checks the session itself; settings are owner-only. Next.js checks
   the `Origin` of every Server Action (CSRF).
 - All input validated on the server (zod), field by field.
@@ -222,7 +227,7 @@ a PostgreSQL database for the app (`E2E_DATABASE_URL`, default
 | Variable | Default | Purpose |
 |---|---|---|
 | `DATABASE_URL` | (required) | PostgreSQL connection |
-| `OWNER_USERNAME`, `OWNER_PASSWORD`, `OWNER_NAME` | (none) | Owner account created on first start (password 12+ characters) |
+| `OWNER_USERNAME`, `OWNER_PASSWORD`, `OWNER_NAME` | (none) | Owner account created on first start (password 12+ characters); later changes are made in the app |
 | `DEMO_MODE` | `false` | Public demo: sample shop, fake payment accounts, demo sign-in, reset on every start (on the free plan: after every sleep) |
 | `TRUST_PROXY` | `false` | Behind a hosting proxy, use `X-Forwarded-For` for sign-in throttling |
 | `PUBLIC_URL` | (from the request) | Public address used in invoice links sent to clients |

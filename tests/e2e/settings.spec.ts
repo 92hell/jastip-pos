@@ -44,3 +44,14 @@ test("payment accounts can be added up to five and removed", async ({ page }) =>
   await page.reload();
   await expect(page.getByRole("group", { name: /^Account \d$/ })).toHaveCount(4);
 });
+
+test("the account page is reached from the signed-in name; in the demo the shared password cannot be changed", async ({ page }) => {
+  await signInAsDemo(page, "en");
+  await page.getByRole("link", { name: "Signed in as Laili (demo)" }).click();
+
+  await expect(page.getByRole("heading", { level: 1, name: "Account" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Change password" })).toBeVisible();
+  await expect(page.getByText("In the demo the password cannot be changed")).toBeVisible();
+  await expect(page.getByLabel("Current password")).toHaveCount(0);
+  await expectAccessible(page, "account (demo)");
+});

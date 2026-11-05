@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import { sessions, users, type User } from "@/lib/db/schema";
 
@@ -48,7 +48,12 @@ export async function deleteSession(db: Db, token: string) {
   await db.delete(sessions).where(eq(sessions.id, hashToken(token)));
 }
 
-/** Ends every session of a user, e.g. after a password change. */
+/** Ends every session of a user. */
 export async function deleteUserSessions(db: Db, userId: number) {
   await db.delete(sessions).where(eq(sessions.userId, userId));
+}
+
+/** Ends every session of a user except this one, e.g. after a password change on this phone. */
+export async function deleteOtherSessions(db: Db, userId: number, keepToken: string) {
+  await db.delete(sessions).where(and(eq(sessions.userId, userId), ne(sessions.id, hashToken(keepToken))));
 }

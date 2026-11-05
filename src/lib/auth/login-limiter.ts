@@ -58,3 +58,10 @@ function pairKey(username: string, address: string) {
 function addressKey(address: string) {
   return `a:${address}`;
 }
+
+const globalForLimiter = globalThis as unknown as { jastipLoginLimiter?: LoginLimiter };
+
+/** The one limiter of this server, shared by signing in and changing the password. */
+export function sharedLoginLimiter(): LoginLimiter {
+  return (globalForLimiter.jastipLoginLimiter ??= new LoginLimiter());
+}
