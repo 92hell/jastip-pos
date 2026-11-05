@@ -27,7 +27,8 @@ Built in milestones, one pull request each:
    refunds or credit for called-off items already paid, a private invoice link sent via WhatsApp
 5. **Installable app** (done): installs from Chrome or the iPhone home screen, tab bar on phones,
    shopping lists usable without signal
-6. Dashboard and per-event reports
+6. **Dashboard** (done): what needs doing today, what clients still owe, money in and fees this
+   month, and a summary per event
 7. Ready stock: excess stock sold at bazaars or wholesale
 8. Public demo and her own private copy
 
@@ -66,6 +67,11 @@ Built in milestones, one pull request each:
   pay. No address, notes or receipt photos; not indexed by search engines; the link is not passed
   on to other sites; she can replace it with a new one. "Send invoice" opens WhatsApp with the
   message and link ready.
+- **Dashboard**: what needs doing, each linking to where it is done: items still to buy (per
+  event), sold-out items waiting for the client, items to pack and to send, DPs not paid in full,
+  overpaid orders to refund or keep as credit. Then the money: what clients still owe, what came in
+  this month (Jakarta time) and the jastip fees earned this month.
+- **Event summary**: orders, item value, the fees earned on the event, total billed, paid and still owed.
 - **Installable app (PWA)**: Chrome on Android offers "Install app" (also from the More tab); on
   iPhone, "Add to Home Screen" (the steps are shown in the app). It opens full screen with its own
   icon. On phones the main sections are tabs at the bottom.

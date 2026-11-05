@@ -32,7 +32,6 @@ async function More() {
   return (
     <div className="space-y-4">
       <ul className="divide-y divide-line overflow-hidden rounded-3xl bg-white shadow-sm">
-        <li><Link href={`/${locale}/dashboard`} className={link}>{t.nav.dashboard}<span aria-hidden="true">›</span></Link></li>
         <li><Link href={`/${locale}/settings`} className={link}>{t.nav.settings}<span aria-hidden="true">›</span></Link></li>
       </ul>
       <section aria-labelledby="install" className="rounded-3xl bg-white p-5 shadow-sm">
