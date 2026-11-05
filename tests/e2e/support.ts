@@ -11,6 +11,8 @@ export async function signInAsDemo(page: Page, locale: "id" | "en" = "id") {
 /** WCAG 2.1 A/AA problems axe can find automatically. */
 export async function expectAccessible(page: Page, name: string) {
   await page.emulateMedia({ reducedMotion: "reduce" });
+  // Check the finished page: parts of it stream in after the first paint.
+  await page.waitForLoadState("networkidle");
   const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const summary = violations.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(" ")).join(", ")})`);
   expect(summary, `accessibility problems on ${name}`).toEqual([]);

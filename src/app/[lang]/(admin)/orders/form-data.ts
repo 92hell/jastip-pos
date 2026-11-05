@@ -30,6 +30,7 @@ export function toFormValues(order: OrderDetail, locale: Locale): OrderFormValue
     eventId: order.eventId ? String(order.eventId) : "",
     note: order.note,
     discount: order.discount ? String(order.discount) : "",
+    dpPercent: order.dpPercent === null ? "" : String(order.dpPercent),
     applyVoucher: order.voucherApplied,
     shipping: plain(order.shipping),
     bundles: order.bundles.map((b, i) => ({ key: `b${i + 1}`, label: b.label, fee: String(b.fee) })),

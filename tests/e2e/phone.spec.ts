@@ -33,4 +33,8 @@ test("every page fits a phone screen", async ({ page }) => {
   await page.getByRole("link", { name: /TLY-/ }).first().click();
   await expect(page.getByRole("region", { name: "Ringkasan" })).toBeVisible();
   await fitsTheScreen(page, "order page");
+  const link = (await page.getByRole("region", { name: "Pembayaran" }).locator("p.font-mono").textContent())!.trim();
+  await page.goto(link);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Invoice");
+  await fitsTheScreen(page, "invoice");
 });

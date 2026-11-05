@@ -23,8 +23,8 @@ Built in milestones, one pull request each:
    NETT (fee included); discount, Instagram-tag voucher, ongkir; resellers
 3. **Events and item status** (done): trips / open POs, bazaars, wholesale; the shopping list per
    event; item status; sold-out items swapped for something similar or called off
-4. Payments: down payment or full, transfer proof, balances (including refunds or credit for
-   called-off items already paid), a private invoice link sent via WhatsApp
+4. **Payments and the invoice link** (done): down payment or full, transfer proof, balances,
+   refunds or credit for called-off items already paid, a private invoice link sent via WhatsApp
 5. Installable app (PWA) with the shopping list working offline
 6. Dashboard and per-event reports
 7. Ready stock: excess stock sold at bazaars or wholesale
@@ -56,6 +56,15 @@ Built in milestones, one pull request each:
   "Tell the client" opens WhatsApp with the message ready ("…sold out 🙏 Mau diganti yang mirip
   atau dibatalkan aja?"); then it is either swapped for a similar item (added to the same order,
   linked, priced again) or called off.
+- **Payments**: a DP target per order (e.g. 50%), then any number of payments by transfer, QRIS,
+  cash or the client's credit, each with an optional photo of the transfer receipt (made smaller in
+  the browser, only visible to staff). The order shows what is paid, what is still due and the DP.
+  When a paid item is called off, the difference is refunded or kept as credit for the next order.
+- **Invoice link**: each order has a private link (`/id/i/<128-bit token>`) the client opens
+  without signing in: items with their status, totals, payments, what is still due and where to
+  pay. No address, notes or receipt photos; not indexed by search engines; the link is not passed
+  on to other sites; she can replace it with a new one. "Send invoice" opens WhatsApp with the
+  message and link ready.
 
 ## The pricing engine
 
@@ -134,3 +143,4 @@ a PostgreSQL database for the app (`E2E_DATABASE_URL`, default
 | `OWNER_USERNAME`, `OWNER_PASSWORD`, `OWNER_NAME` | (none) | Owner account created on first start (password 12+ characters) |
 | `DEMO_MODE` | `false` | Public demo: sample shop, fake payment accounts, demo sign-in, reset on every start |
 | `TRUST_PROXY` | `false` | Behind a hosting proxy, use `X-Forwarded-For` for sign-in throttling |
+| `PUBLIC_URL` | (from the request) | Public address used in invoice links sent to clients |
