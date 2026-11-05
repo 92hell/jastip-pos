@@ -19,8 +19,8 @@ PostgreSQL 17 · Drizzle ORM · Tailwind CSS 4 · Vitest · Playwright · Testco
 Built in milestones, one pull request each:
 
 1. **Setup** (done): sign-in, the shop's public page, shop settings, Indonesian/English, CI
-2. Clients, orders and the pricing engine: fee per item, per bundle, a percentage, or NETT (fee
-   included); discount, Instagram-tag voucher, shipping; resellers
+2. **Clients, orders and the pricing engine** (done): fee per item, per bundle, a percentage, or
+   NETT (fee included); discount, Instagram-tag voucher, ongkir; resellers
 3. Trips (open PO) and one-off orders, the shopping list per trip, item status, sold-out items
    refunded or kept as credit
 4. Payments: down payment or full, transfer proof, balances, a private invoice link sent via WhatsApp
@@ -35,6 +35,22 @@ Built in milestones, one pull request each:
   Instagram-tag voucher.
 - **Sign-in** for Laili (and helpers later). Clients never sign in: they will get a private invoice link.
 - **Shop settings**: profile, up to five payment accounts, rules and the voucher amount.
+- **Clients**: name, WhatsApp (any way it is typed: 0812-…, +62 …), address, notes, reseller mark;
+  search by name or number; a number another client already has is refused. Deleting a client with
+  orders wipes their personal details but keeps the orders.
+- **Orders**: items with store, quantity and price, each with its own jastip fee: a flat fee per item,
+  a percentage, NETT (fee included) or part of a bundle with one flat fee. Then discount, the
+  Instagram-tag voucher and ongkir (left open until known). Amounts can be typed the way they are in
+  chats: `350.000`, `25rb`, `1,5jt`. The total updates while typing, and the server prices the order
+  again on save. Orders are numbered per year in Jakarta time (`TLY-2026-0001`).
+
+## The pricing engine
+
+[`src/lib/pricing.ts`](src/lib/pricing.ts) is one pure function used by both the order form and the
+server, so what Laili sees while typing is what gets saved. Money is whole rupiah; a percentage fee
+is rounded per line; discount and voucher never take the total below zero and never reduce ongkir;
+anything impossible (zero quantity, negative or fractional amounts, an unknown bundle) is refused
+rather than guessed. Its unit tests are written from how she actually prices orders.
 
 ## Her data stays hers
 

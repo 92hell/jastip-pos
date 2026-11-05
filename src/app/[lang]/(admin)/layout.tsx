@@ -17,8 +17,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <Link href={`/${locale}/dashboard`} className="no-underline">
             <Brand name="titiplailiyuk" />
           </Link>
-          <nav aria-label="Admin" className="flex gap-4 font-semibold">
+          <nav aria-label="Admin" className="flex flex-wrap gap-x-4 gap-y-1 font-semibold">
             <Link href={`/${locale}/dashboard`} className="hover:underline">{t.nav.dashboard}</Link>
+            <Link href={`/${locale}/orders`} className="hover:underline">{t.nav.orders}</Link>
+            <Link href={`/${locale}/clients`} className="hover:underline">{t.nav.clients}</Link>
             <Link href={`/${locale}/settings`} className="hover:underline">{t.nav.settings}</Link>
           </nav>
           <div className="ml-auto flex items-center gap-3">

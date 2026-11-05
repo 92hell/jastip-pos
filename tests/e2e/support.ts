@@ -18,3 +18,16 @@ export async function expectAccessible(page: Page, name: string) {
 
 /** The message of a refused form (not Next.js's own route announcer, which is also an alert). */
 export const formAlert = (page: Page) => page.locator("form [role=alert], main [role=alert]").first();
+
+/**
+ * No two elements share an id, counting the pages Next.js keeps hidden for back navigation: a
+ * label pointing at a hidden twin would label the wrong field.
+ */
+export async function expectUniqueIds(page: Page) {
+  const duplicates = await page.evaluate(() => {
+    const seen = new Map<string, number>();
+    for (const el of document.querySelectorAll("[id]")) seen.set(el.id, (seen.get(el.id) ?? 0) + 1);
+    return [...seen].filter(([, n]) => n > 1).map(([id]) => id);
+  });
+  expect(duplicates, "ids used more than once").toEqual([]);
+}

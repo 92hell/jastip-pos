@@ -46,3 +46,8 @@ export function preferredLocale(acceptLanguage: string | null | undefined): Loca
   const best = ranked.find((entry) => isLocale(entry.lang));
   return best && isLocale(best.lang) ? best.lang : DEFAULT_LOCALE;
 }
+
+/** A date in Jakarta time: "5 Nov 2026" / "Nov 5, 2026". */
+export function formatDate(date: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", { dateStyle: "medium", timeZone: "Asia/Jakarta" }).format(date);
+}

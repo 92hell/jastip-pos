@@ -17,4 +17,13 @@ test("every page fits a phone screen", async ({ page }) => {
   await page.goto("/id/settings");
   await expect(page.getByLabel("Nama toko")).toBeVisible();
   await fitsTheScreen(page, "settings");
+  for (const [path, name] of [["/id/clients", "clients"], ["/id/orders", "orders"], ["/id/orders/new", "new order"]]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await fitsTheScreen(page, name);
+  }
+  await page.goto("/id/orders");
+  await page.getByRole("link", { name: /TLY-/ }).first().click();
+  await expect(page.getByRole("region", { name: "Ringkasan" })).toBeVisible();
+  await fitsTheScreen(page, "order page");
 });
