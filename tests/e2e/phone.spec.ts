@@ -17,7 +17,7 @@ test("every page fits a phone screen", async ({ page }) => {
   await page.goto("/id/settings");
   await expect(page.getByLabel("Nama toko")).toBeVisible();
   await fitsTheScreen(page, "settings");
-  for (const [path, name] of [["/id/clients", "clients"], ["/id/orders", "orders"], ["/id/orders/new", "new order"]]) {
+  for (const [path, name] of [["/id/clients", "clients"], ["/id/orders", "orders"], ["/id/orders/new", "new order"], ["/id/stock", "ready stock"], ["/id/stock/new", "new stock item"], ["/id/stock/1", "stock item"]]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await fitsTheScreen(page, name);

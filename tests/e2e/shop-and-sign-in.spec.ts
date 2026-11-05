@@ -47,3 +47,12 @@ test("admin pages need a sign-in", async ({ page }) => {
     await expect(page).toHaveURL(new RegExp(`/${path.split("/")[1]}/login$`));
   }
 });
+
+test("skip to content moves to the page's own content, also after signing in", async ({ page }) => {
+  await signInAsDemo(page);
+  const skip = page.getByRole("link", { name: "Langsung ke isi" });
+  await skip.focus();
+  await skip.press("Enter");
+  await expect(page.getByRole("main")).toBeFocused();
+  await expect(page.getByRole("main").getByRole("heading", { level: 1 })).toContainText("Halo");
+});

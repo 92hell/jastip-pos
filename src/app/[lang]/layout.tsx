@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { dictionary, isLocale, LOCALES, type Locale } from "@/i18n";
 import { isDemo } from "@/lib/server/request";
 import { AppShell } from "@/components/AppShell";
+import { SkipLink } from "@/components/SkipLink";
 import "../globals.css";
 
 export async function generateStaticParams() {
@@ -36,9 +37,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
   return (
     <html lang={l}>
       <body className="min-h-screen">
-        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">
-          {t.common.skipToContent}
-        </a>
+        <SkipLink label={t.common.skipToContent} />
         <AppShell offlineText={t.common.offline} />
         <Suspense fallback={null}>
           <DemoBanner text={t.common.demoBanner} />

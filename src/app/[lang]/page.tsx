@@ -16,7 +16,7 @@ export default async function ShopPage() {
       <header className="mb-6 flex items-center justify-end">
         <LanguageSwitch current={locale} path="" label={t.common.language} />
       </header>
-      <main id="main">
+      <main>
         <Suspense fallback={<p>{t.common.loading}</p>}>
           <ShopProfile />
         </Suspense>

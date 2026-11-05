@@ -20,6 +20,12 @@ export async function eventOptions(db: Db, t: Dictionary["events"], current?: { 
   return events;
 }
 
+/** The order form's "take from ready stock" texts. */
+export function stockText(t: Dictionary) {
+  const { fromStock, fromStockButton, fromStockOption, stockLine, left } = t.stock;
+  return { fromStock, fromStockButton, fromStockOption, stockLine, left };
+}
+
 const plain = (n: number | null) => (n === null ? "" : String(n));
 
 /** A saved order back into the form's typed values. */
@@ -36,6 +42,7 @@ export function toFormValues(order: OrderDetail, locale: Locale): OrderFormValue
     bundles: order.bundles.map((b, i) => ({ key: `b${i + 1}`, label: b.label, fee: String(b.fee) })),
     items: order.items.map((item, i) => ({
       id: item.id,
+      stockItemId: item.stockItemId,
       key: i + 1,
       name: item.name,
       store: item.store,

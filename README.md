@@ -35,6 +35,9 @@ around a generic point-of-sale:
   swap is linked to what it replaces, and money already paid is refunded or kept as credit.
 - **Trips, bazaars and wholesale.** Orders can belong to an event with a deadline and its own
   shopping list, grouped by store, which still opens in a basement without signal.
+- **Leftovers are money too.** Extras bought on a trip become ready stock: sold at a bazaar without
+  an order, to a reseller, or as a line in a client's order, with what is left and the profit
+  always in view.
 - **Clients never sign in.** They get a private invoice link over WhatsApp showing their items,
   what is paid, what is still due and where to transfer.
 
@@ -46,14 +49,15 @@ around a generic point-of-sale:
 | "Sold out" is a state, not a deletion | The item, the client's answer and any swap stay on the order, so the invoice and the money explain themselves later. |
 | A 128-bit invoice link instead of client accounts | Clients already live in WhatsApp. The page leaves out address, notes and receipt photos, is not indexed, sends no referrer, and the link can be replaced. |
 | Offline shopping lists with a hand-written service worker | Malls have dead spots. Only shopping lists are stored; ticks wait on the phone and are sent when signal returns; signing out deletes them. Every caching rule is in one short file. |
+| What is left of ready stock is never stored | It is worked out from what came in, direct sales and recounts, minus the order lines that use the item, so editing an order, calling a line off or undoing a sale gives stock back by itself. Each change locks the item, so the last unit cannot be sold twice. |
 | Money changes inside transactions, behind row locks | Order numbers come from one atomic counter per Jakarta year; payments, swaps and status changes lock their order first, so two quick taps cannot spend a client's credit twice. |
 | Her data stays hers | The public repo and demo hold no real accounts or clients. Her copy runs separately, and deleting a client wipes their details but keeps the orders (UU PDP). |
 | Accessibility checked in the browser | axe (WCAG 2.1 AA) runs on every page at desktop and phone size in the end-to-end tests. |
 | The test list is the specification | [docs/TESTING.md](docs/TESTING.md) is generated from the test names, so it cannot drift from what is tested. |
 | Free hosting, honestly handled | Two free Render services (demo and her shop) on free Neon databases; the demo link is a small page on GitHub Pages that wakes it ([docs/DEPLOY.md](docs/DEPLOY.md)). |
 
-**Tested:** 37 unit tests, 52 integration tests against PostgreSQL 17 in Docker with the real
-migrations, 25 end-to-end journeys in a real browser at desktop and phone size, and 6 tests for the
+**Tested:** 37 unit tests, 62 integration tests against PostgreSQL 17 in Docker with the real
+migrations, 27 end-to-end journeys in a real browser at desktop and phone size, and 6 tests for the
 wake-up page; all in CI on every pull request.
 
 ## Screenshots
@@ -92,7 +96,8 @@ Built in milestones, one pull request each:
 6. **Dashboard** (done): what needs doing today, what clients still owe, money in and fees this
    month, and a summary per event
 7. **Public demo and her own private copy** (done): free hosting, a wake-up link for the demo
-8. Ready stock: excess stock sold at bazaars or wholesale
+8. **Ready stock** (done): leftovers and extras sold at bazaars, wholesale or in orders; what is
+   left, its value and the profit
 
 ## Features
 
@@ -134,8 +139,15 @@ Built in milestones, one pull request each:
 - **Dashboard**: what needs doing, each linking to where it is done: items still to buy (per
   event), sold-out items waiting for the client, items to pack and to send, DPs not paid in full,
   overpaid orders to refund or keep as credit. Then the money: what clients still owe, what came in
-  this month (Jakarta time) and the jastip fees earned this month.
-- **Event summary**: orders, item value, the fees earned on the event, total billed, paid and still owed.
+  this month (Jakarta time, including ready stock sold directly) and the jastip fees earned this
+  month; and the ready stock's value and this month's profit on it.
+- **Event summary**: orders, item value, the fees earned on the event, total billed, paid and still
+  owed; for a bazaar, what ready stock sold there directly and the profit on it.
+- **Ready stock**: things already in hand to sell again, each with its cost and usual price. Sell
+  directly at a bazaar (cash, QRIS or transfer, no client needed), or take it into an order
+  ("Take from ready stock": the line starts as arrived, at the usual price, NETT, and can be priced
+  for a reseller). Selling more than is left is refused. Add more, recount with a reason, or undo
+  an entry. Each item shows what is left, its value at cost, units sold, sales and profit.
 - **Installable app (PWA)**: Chrome on Android offers "Install app" (also from the More tab); on
   iPhone, "Add to Home Screen" (the steps are shown in the app). It opens full screen with its own
   icon. On phones the main sections are tabs at the bottom.

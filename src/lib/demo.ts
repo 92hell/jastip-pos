@@ -7,6 +7,7 @@ import { createEvent } from "@/lib/events";
 import { createOrder, getOrder, setItemStatus, type OrderInput } from "@/lib/orders";
 import { recordPayment } from "@/lib/payments";
 import { DEFAULT_SETTINGS, updateSettings } from "@/lib/settings";
+import { createStockItem, recordStockSale } from "@/lib/stock";
 
 /** Clearly fake accounts: the public demo never shows real bank details. */
 export const DEMO_ACCOUNTS = [
@@ -16,7 +17,7 @@ export const DEMO_ACCOUNTS = [
 
 /** Puts the public demo back to its starting point: the demo admin and the sample shop settings. */
 export async function resetDemo(db: Db, admin: { username: string; password: string }) {
-  await db.execute(sql`TRUNCATE users, sessions, business_settings, clients, orders, order_bundles, order_items, order_counters, events, payments, client_credits RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE users, sessions, business_settings, clients, orders, order_bundles, order_items, order_counters, events, payments, client_credits, stock_items, stock_moves RESTART IDENTITY CASCADE`);
   await ensureOwner(db, { ...admin, displayName: "Laili (demo)" });
   const saved = await updateSettings(db, {
     ...DEFAULT_SETTINGS,
@@ -46,6 +47,20 @@ async function seedOrders(db: Db) {
   const dina = await client("Dina Pratiwi", "0812-0000-0002", true, "Reseller Bintaro");
   const maya = await client("Maya Sari", "0812-0000-0003");
 
+  // Ready stock: extras from the trip and leftovers, some already sold at the bazaar.
+  const stock = async (name: string, store: string, unitCost: string, price: string, quantity: string, eventId: number | "" = "") => {
+    const result = await createStockItem(db, { name, store, unitCost, price, quantity, eventId: String(eventId), note: "" }, null);
+    if (!result.ok) throw new Error(`Demo stock ${name}: ${JSON.stringify(result.errors)}`);
+    return result.id;
+  };
+  const tumbler = await stock("Tumbler Starbucks Singapore", "Starbucks", "250rb", "350rb", "6", trip.id);
+  await stock("Totebag Charles & Keith", "Charles & Keith", "450rb", "599rb", "3");
+  const bueno = await stock("Kinder Bueno isi 3", "Cold Storage", "25rb", "40rb", "24");
+  for (const [id, quantity, unitPrice, method] of [[bueno, "4", "40rb", "cash"], [tumbler, "1", "350rb", "qris"]] as const) {
+    const sold = await recordStockSale(db, id, { quantity, unitPrice, method, eventId: String(bazaar.id), soldOn: day(0), note: "" }, null);
+    if (!sold.ok) throw new Error("Demo stock sale is invalid");
+  }
+
   const item = (name: string, store: string, unitPrice: string, fee: Partial<OrderInput["items"][number]>, quantity = 1): OrderInput["items"][number] => ({
     name, store, quantity, unitPrice, feeMode: "nett" as const, feeAmount: "", feePercent: "", bundle: "", ...fee,
   });
@@ -63,6 +78,7 @@ async function seedOrders(db: Db) {
         item("Serum Somethinc", "Watsons", "149rb", { feeMode: "bundle", bundle: "b1" }, 3),
         item("Toner Avoskin", "Guardian", "135rb", { feeMode: "bundle", bundle: "b1" }, 2),
         item("Sepatu Converse", "Converse Store", "1jt", { feeMode: "percent", feePercent: "8" }),
+        item("Tumbler Starbucks Singapore", "Starbucks", "320rb", { feeMode: "nett", stockItemId: tumbler }, 2),
       ],
     },
     {

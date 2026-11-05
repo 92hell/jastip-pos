@@ -11,6 +11,8 @@ import { saveOrder, type OrderState } from "./actions";
 export type OrderFormItem = {
   /** The saved line being edited (keeps its status); absent for a new line. */
   id?: number;
+  /** Taken from ready stock. */
+  stockItemId?: number | null;
   key: number; name: string; store: string; quantity: string; unitPrice: string;
   feeMode: FeeMode; feeAmount: string; feePercent: string; bundle: string;
 };
@@ -31,6 +33,9 @@ type Props = {
   t: Dictionary["orders"];
   errorsText: Dictionary["errors"];
   resellerLabel: string;
+  /** Ready stock with something left, to add as a line. */
+  stock: { id: number; name: string; store: string; price: number; available: number }[];
+  stockText: Pick<Dictionary["stock"], "fromStock" | "fromStockButton" | "fromStockOption" | "stockLine" | "left">;
 };
 
 const blankItem = (key: number, like?: OrderFormItem): OrderFormItem => ({
@@ -71,7 +76,7 @@ function preview(values: OrderFormValues, voucherAmount: number) {
   }
 }
 
-export function OrderForm({ locale, id, initial, clients, events, noEventLabel, voucherAmount, t, errorsText, resellerLabel }: Props) {
+export function OrderForm({ locale, id, initial, clients, events, noEventLabel, voucherAmount, t, errorsText, resellerLabel, stock, stockText }: Props) {
   const [state, action, pending] = useActionState<OrderState, FormData>(saveOrder, {});
   // Unique per form: Next.js keeps recently visited pages (with their forms) hidden in the page.
   const uid = useId();
@@ -90,6 +95,19 @@ export function OrderForm({ locale, id, initial, clients, events, noEventLabel, 
     setValues((v) => ({ ...v, items: [...v.items, blankItem(nextKey, v.items.at(-1))] }));
     setNextKey((k) => k + 1);
   };
+  const [pick, setPick] = useState("");
+  /** A line from ready stock: already in hand, at its usual price, NETT (she can still change price and fee). */
+  const addFromStock = () => {
+    const item = stock.find((s) => String(s.id) === pick);
+    if (!item) return;
+    setValues((v) => ({
+      ...v,
+      items: [...v.items, { key: nextKey, stockItemId: item.id, name: item.name, store: item.store, quantity: "1", unitPrice: String(item.price), feeMode: "nett", feeAmount: "", feePercent: "", bundle: "" }],
+    }));
+    setNextKey((k) => k + 1);
+    setPick("");
+  };
+  const stockLeft = (stockItemId: number) => stock.find((s) => s.id === stockItemId)?.available;
   const addBundle = () =>
     setValues((v) => {
       const key = `b${Math.max(0, ...v.bundles.map((b) => Number(b.key.slice(1)))) + 1}`;
@@ -156,7 +174,14 @@ export function OrderForm({ locale, id, initial, clients, events, noEventLabel, 
           return (
             <div key={item.key} role="group" aria-label={fill(t.itemN, { n: i + 1 })} className="space-y-3 rounded-2xl border border-line p-4">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="font-bold">{fill(t.itemN, { n: i + 1 })}</h3>
+                <h3 className="flex flex-wrap items-center gap-2 font-bold">
+                  {fill(t.itemN, { n: i + 1 })}
+                  {item.stockItemId && (
+                    <span className="rounded-full bg-sky px-2 py-0.5 text-xs">
+                      {stockText.stockLine}{stockLeft(item.stockItemId) !== undefined ? ` · ${fill(stockText.left, { n: stockLeft(item.stockItemId)! })}` : ""}
+                    </span>
+                  )}
+                </h3>
                 {values.items.length > 1 && (
                   <button type="button" onClick={() => setValues((v) => ({ ...v, items: v.items.filter((x) => x.key !== item.key) }))}
                     aria-label={fill(t.removeItem, { n: i + 1 })} className="rounded-full border border-danger px-3 py-1 text-sm font-semibold text-danger hover:bg-red-50">✕</button>
@@ -199,6 +224,23 @@ export function OrderForm({ locale, id, initial, clients, events, noEventLabel, 
           );
         })}
         <button type="button" onClick={addItem} className="rounded-full border-2 border-ink px-4 py-2 font-semibold hover:bg-sky-soft">+ {t.addItem}</button>
+        {stock.length > 0 && (
+          <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-sky-soft p-3">
+            <div className="min-w-0 flex-1 basis-60">
+              <Field id={`${uid}-from-stock`} label={stockText.fromStock}>
+                {() => (
+                  <select id={`${uid}-from-stock`} value={pick} onChange={(e) => setPick(e.target.value)} className={inputClass(false)}>
+                    <option value="">…</option>
+                    {stock.map((s) => (
+                      <option key={s.id} value={s.id}>{fill(stockText.fromStockOption, { name: s.name, n: s.available, price: money(s.price) })}</option>
+                    ))}
+                  </select>
+                )}
+              </Field>
+            </div>
+            <button type="button" onClick={addFromStock} disabled={!pick} className="h-11 rounded-full border-2 border-ink px-4 font-semibold hover:bg-white disabled:opacity-50">+ {stockText.fromStockButton}</button>
+          </div>
+        )}
       </section>
 
       <section aria-labelledby={`${uid}-bundles`} className="space-y-4 rounded-3xl bg-white p-5 shadow-sm">

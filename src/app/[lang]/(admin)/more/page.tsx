@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.nav.more };
 }
 
-/** On phones, everything that is not a main tab: shop settings, the account, installing the app, signing out. */
+/** On phones, everything that is not a main tab: ready stock, shop settings, the account, installing the app, signing out. */
 export default async function MorePage() {
   const { t } = await currentLocale();
   return (
@@ -32,6 +32,7 @@ async function More() {
   return (
     <div className="space-y-4">
       <ul className="divide-y divide-line overflow-hidden rounded-3xl bg-white shadow-sm">
+        <li><Link href={`/${locale}/stock`} className={link}>{t.stock.title}<span aria-hidden="true">›</span></Link></li>
         <li><Link href={`/${locale}/settings`} className={link}>{t.nav.settings}<span aria-hidden="true">›</span></Link></li>
         <li><Link href={`/${locale}/account`} className={link}>{t.account.password}<span aria-hidden="true">›</span></Link></li>
       </ul>

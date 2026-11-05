@@ -71,6 +71,8 @@ describe("Dashboard", () => {
       outstanding: 1_050_000 - 200_000,
       // Only November payments; the October one is last month's money.
       receivedThisMonth: 200_000,
+      stockValue: 0,
+      stockProfitThisMonth: 0,
       feesThisMonth: 50_000,
     });
   });
@@ -92,7 +94,7 @@ describe("Event summary", () => {
     await recordPayment(db, a, { amount: "330rb", method: "cash", paidOn: "2026-11-20", note: "" }, null);
 
     expect(await getEventSummary(db, trip.id)).toEqual({
-      orders: 2, itemsTotal: 550_000, feesTotal: 60_000, total: 610_000, paid: 330_000, outstanding: 280_000, soldOut: 0,
+      orders: 2, itemsTotal: 550_000, feesTotal: 60_000, total: 610_000, paid: 330_000, outstanding: 280_000, soldOut: 0, stockSales: 0, stockProfit: 0,
     });
   });
 });

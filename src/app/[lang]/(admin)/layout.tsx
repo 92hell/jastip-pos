@@ -30,6 +30,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <Link href={`/${locale}/orders`} className="hover:underline">{t.nav.orders}</Link>
             <Link href={`/${locale}/events`} className="hover:underline">{t.nav.events}</Link>
             <Link href={`/${locale}/clients`} className="hover:underline">{t.nav.clients}</Link>
+            <Link href={`/${locale}/stock`} className="hover:underline">{t.nav.stock}</Link>
             <Link href={`/${locale}/settings`} className="hover:underline">{t.nav.settings}</Link>
           </nav>
           <div className="ml-auto flex items-center gap-3">
@@ -42,7 +43,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
       </header>
-      <main id="main" className="mx-auto max-w-4xl px-4 pb-28 pt-6 sm:pb-6">
+      <main className="mx-auto max-w-4xl px-4 pb-28 pt-6 sm:pb-6">
         {children}
       </main>
       <Suspense fallback={<BottomNav label={t.nav.tabs} tabs={tabs} />}>

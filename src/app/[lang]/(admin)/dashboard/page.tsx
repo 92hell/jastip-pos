@@ -56,6 +56,13 @@ async function Dashboard() {
             </div>
           ))}
         </dl>
+        {(d.money.stockValue > 0 || d.money.stockProfitThisMonth !== 0) && (
+          <p className="mt-3">
+            <Link href={`/${locale}/stock`} className="inline-block rounded-2xl bg-white px-4 py-2 font-semibold underline shadow-sm">
+              {fill(t.stock.dashboard, { value: money(d.money.stockValue), profit: money(d.money.stockProfitThisMonth) })}
+            </Link>
+          </p>
+        )}
       </section>
 
       <section aria-labelledby="todo" className="mt-6">

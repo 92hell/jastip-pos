@@ -3,6 +3,7 @@ import { and, eq, gte, lt, sql } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import { clients, events, orderItems, orders, payments } from "@/lib/db/schema";
 import { orderBalance, type Balance } from "@/lib/balance";
+import { eventStock, monthStock } from "@/lib/stock";
 
 /** Start and end of the current month in Jakarta, as instants and as YYYY-MM-DD days. */
 export function jakartaMonth(now = new Date()) {
@@ -61,7 +62,8 @@ export type Dashboard = {
   dpDue: OrderWithBalance[];
   /** Orders paid beyond their total: refund or keep as credit. */
   overpaid: OrderWithBalance[];
-  money: { outstanding: number; receivedThisMonth: number; feesThisMonth: number };
+  /** receivedThisMonth includes ready stock sold directly; stockValue is what is left, at cost. */
+  money: { outstanding: number; receivedThisMonth: number; feesThisMonth: number; stockValue: number; stockProfitThisMonth: number };
 };
 
 export async function getDashboard(db: Db, now = new Date()): Promise<Dashboard> {
@@ -89,6 +91,8 @@ export async function getDashboard(db: Db, now = new Date()): Promise<Dashboard>
     .from(orders)
     .where(and(gte(orders.createdAt, month.from), lt(orders.createdAt, month.to)));
 
+  const stock = await monthStock(db, month);
+
   return {
     toBuy,
     waitingForClient: await itemsWithStatus(db, and(eq(orderItems.status, "sold_out"), eq(orderItems.soldOutResolution, "waiting"))),
@@ -98,8 +102,10 @@ export async function getDashboard(db: Db, now = new Date()): Promise<Dashboard>
     overpaid: all.filter((o) => o.balance.overpaid > 0),
     money: {
       outstanding: all.reduce((sum, o) => sum + o.balance.due, 0),
-      receivedThisMonth: received,
+      receivedThisMonth: received + stock.directSales,
       feesThisMonth: fees,
+      stockValue: stock.value,
+      stockProfitThisMonth: stock.profit,
     },
   };
 }
@@ -113,9 +119,13 @@ export type EventSummary = {
   paid: number;
   outstanding: number;
   soldOut: number;
+  /** Ready stock sold directly at the event (a bazaar), without orders. */
+  stockSales: number;
+  /** Profit on all ready stock sold at the event, directly and in its orders. */
+  stockProfit: number;
 };
 
-/** One event's money: orders, item value, fees earned, paid and still owed. */
+/** One event's money: orders, item value, fees earned, paid and still owed, and ready stock sold there. */
 export async function getEventSummary(db: Db, eventId: number): Promise<EventSummary> {
   const list = await ordersWithBalance(db, eventId);
   const [{ soldOut }] = await db
@@ -131,5 +141,6 @@ export async function getEventSummary(db: Db, eventId: number): Promise<EventSum
     paid: list.reduce((s, o) => s + o.balance.paid, 0),
     outstanding: list.reduce((s, o) => s + o.balance.due, 0),
     soldOut,
+    ...(await eventStock(db, eventId)),
   };
 }
