@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { signInAsDemo } from "./support";
+import { expectAccessible, signInAsDemo } from "./support";
 
 async function fitsTheScreen(page: Page, name: string) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -27,7 +27,7 @@ test("every page fits a phone screen", async ({ page }) => {
   await fitsTheScreen(page, "events");
   await page.getByRole("link", { name: /Jastip Singapore/ }).click();
   await page.getByRole("link", { name: "Daftar belanja" }).click();
-  await expect(page.getByRole("status")).toBeVisible();
+  await expect(page.getByText(/^\d+ dari \d+ sudah dibeli$/)).toBeVisible();
   await fitsTheScreen(page, "shopping list");
   await page.goto("/id/orders");
   await page.getByRole("link", { name: /TLY-/ }).first().click();
@@ -37,4 +37,17 @@ test("every page fits a phone screen", async ({ page }) => {
   await page.goto(link);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Invoice");
   await fitsTheScreen(page, "invoice");
+});
+
+test("on a phone the main sections are tabs at the bottom; the rest is under More", async ({ page }) => {
+  await signInAsDemo(page);
+  const tabs = page.getByRole("navigation", { name: "Menu utama" });
+  await tabs.getByRole("link", { name: /Pesanan/ }).click();
+  await expect(page).toHaveURL(/\/id\/orders$/);
+  await expect(tabs.getByRole("link", { name: /Pesanan/ })).toHaveAttribute("aria-current", "page");
+  await tabs.getByRole("link", { name: /Lainnya/ }).click();
+  await expect(page.getByRole("heading", { name: "Pasang aplikasi" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Pengaturan toko/ })).toBeVisible();
+  await fitsTheScreen(page, "more");
+  await expectAccessible(page, "more (phone)");
 });

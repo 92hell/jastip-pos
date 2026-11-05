@@ -25,7 +25,8 @@ Built in milestones, one pull request each:
    event; item status; sold-out items swapped for something similar or called off
 4. **Payments and the invoice link** (done): down payment or full, transfer proof, balances,
    refunds or credit for called-off items already paid, a private invoice link sent via WhatsApp
-5. Installable app (PWA) with the shopping list working offline
+5. **Installable app** (done): installs from Chrome or the iPhone home screen, tab bar on phones,
+   shopping lists usable without signal
 6. Dashboard and per-event reports
 7. Ready stock: excess stock sold at bazaars or wholesale
 8. Public demo and her own private copy
@@ -65,6 +66,14 @@ Built in milestones, one pull request each:
   pay. No address, notes or receipt photos; not indexed by search engines; the link is not passed
   on to other sites; she can replace it with a new one. "Send invoice" opens WhatsApp with the
   message and link ready.
+- **Installable app (PWA)**: Chrome on Android offers "Install app" (also from the More tab); on
+  iPhone, "Add to Home Screen" (the steps are shown in the app). It opens full screen with its own
+  icon. On phones the main sections are tabs at the bottom.
+- **Offline shopping lists**: a list opened once with signal opens again without it, and ticks
+  ("bought", "sold out") made offline are kept on the phone, marked "not sent yet", and sent
+  automatically when signal returns. Only shopping lists are stored; signing out deletes them and
+  any unsent ticks. The service worker is a short hand-written file
+  ([`public/sw.js`](public/sw.js)) so every caching rule is visible.
 
 ## The pricing engine
 
