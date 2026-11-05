@@ -58,7 +58,7 @@ async function SignedIn() {
   if (!user) return null;
   return (
     <div className="flex items-center gap-3 text-sm">
-      <span className="text-muted">{fill(t.nav.signedInAs, { name: user.displayName })}</span>
+      <Link href={`/${locale}/account`} className="text-muted hover:underline">{fill(t.nav.signedInAs, { name: user.displayName })}</Link>
       <SignOutButton action={logout} locale={locale} label={t.common.signOut} className="rounded-full border border-ink px-3 py-1 font-semibold hover:bg-sky-soft" />
     </div>
   );

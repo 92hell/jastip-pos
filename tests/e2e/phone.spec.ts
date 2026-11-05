@@ -50,4 +50,8 @@ test("on a phone the main sections are tabs at the bottom; the rest is under Mor
   await expect(page.getByRole("link", { name: /Pengaturan toko/ })).toBeVisible();
   await fitsTheScreen(page, "more");
   await expectAccessible(page, "more (phone)");
+
+  await page.getByRole("link", { name: /Ganti kata sandi/ }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Akun" })).toBeVisible();
+  await fitsTheScreen(page, "account");
 });

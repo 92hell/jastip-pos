@@ -5,15 +5,12 @@ import { redirect } from "next/navigation";
 import { isLocale } from "@/i18n";
 import { authenticate } from "@/lib/auth/accounts";
 import { SESSION_COOKIE } from "@/lib/auth/current-user";
-import { LoginLimiter } from "@/lib/auth/login-limiter";
+import { sharedLoginLimiter } from "@/lib/auth/login-limiter";
 import { createSession, deleteSession } from "@/lib/auth/sessions";
 import { getDb } from "@/lib/db";
 import { clientAddress } from "@/lib/server/request";
 
 export type LoginState = { error?: "invalid" | "blocked" | "required"; username?: string };
-
-const globalForLimiter = globalThis as unknown as { jastipLoginLimiter?: LoginLimiter };
-const limiter = (globalForLimiter.jastipLoginLimiter ??= new LoginLimiter());
 
 export async function login(_state: LoginState, form: FormData): Promise<LoginState> {
   const locale = String(form.get("locale"));
@@ -22,6 +19,7 @@ export async function login(_state: LoginState, form: FormData): Promise<LoginSt
   if (!username || !password) return { error: "required", username };
 
   const address = await clientAddress();
+  const limiter = sharedLoginLimiter();
   if (limiter.isBlocked(username, address)) return { error: "blocked", username };
   const user = await authenticate(getDb(), username, password);
   if (!user) {

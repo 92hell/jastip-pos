@@ -29,8 +29,10 @@ The app creates its tables itself on first start (migrations), so the databases 
 2. It asks for the values that are not in the code:
    - `titip-laili-demo` → `DATABASE_URL`: the `jastip_demo` string
    - `titip-laili` → `DATABASE_URL`: the `jastip_laili` string
-   - `titip-laili` → `OWNER_PASSWORD`: Laili's password (12+ characters). Write it down for her; she
-     can change it later.
+   - `titip-laili` → `OWNER_PASSWORD`: Laili's first password (12+ characters). Write it down for
+     her. It is only used to create her account on the first start: she then changes it in the app
+     (**Lainnya → Ganti kata sandi** on the phone, or her name at the top on a computer), and
+     changing `OWNER_PASSWORD` in Render afterwards has no effect.
 3. **Apply**. The first build takes a few minutes. Then:
    - the demo is at `https://titip-laili-demo.onrender.com`
    - Laili's shop at `https://titip-laili.onrender.com` (sign in as `laili`)
