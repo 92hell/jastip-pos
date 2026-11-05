@@ -1,13 +1,15 @@
 name: Wake-up page
 
 # A static page on GitHub Pages (which never sleeps) that wakes the free Render demo and opens it
-# once it answers. One-time setup: Settings -> Pages -> Source: "GitHub Actions".
+# once it answers, and Laili's guide at /panduan/ (a plain link to send on WhatsApp).
+# One-time setup: Settings -> Pages -> Source: "GitHub Actions".
 
 on:
   push:
     branches: [main]
     paths:
       - wake/**
+      - guide/**
       - public/icons/**
       - .github/workflows/wake-page.yml
   workflow_dispatch:
@@ -39,6 +41,7 @@ jobs:
         run: |
           mkdir _site
           cp wake/index.html wake/wake.js public/icons/icon-192.png public/icons/icon-512.png _site/
+          cp -r guide _site/panduan
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

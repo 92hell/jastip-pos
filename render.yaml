@@ -19,6 +19,7 @@ services:
         - docs/**
         - tests/**
         - wake/**
+        - guide/**
         - scripts/**
         - .github/**
     envVars:
@@ -46,6 +47,7 @@ services:
         - docs/**
         - tests/**
         - wake/**
+        - guide/**
         - scripts/**
         - .github/**
     envVars:

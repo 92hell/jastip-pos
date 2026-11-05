@@ -63,7 +63,11 @@ the variable afterwards.
 The demo sleeps, so the link to share is a small page that wakes it and opens it when it answers:
 **https://92hell.github.io/jastip-pos/**.
 
-Once: GitHub → repository **Settings → Pages → Source: GitHub Actions**. The `Wake-up page`
+Once: GitHub → repository **Settings → Pages → Source: GitHub Actions**.
+
+The same site serves Laili's guide, in Indonesian, at **https://92hell.github.io/jastip-pos/panduan/**
+(from `guide/`): a plain link to send her on WhatsApp. Her review stays on her phone until she sends
+it back from the page over WhatsApp. The `Wake-up page`
 workflow then publishes `wake/` on every change to it (or run it from the Actions tab).
 
 ## 4. Install on Laili's phone (Android)
