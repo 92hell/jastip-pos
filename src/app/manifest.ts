@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "TitipLaili",
     description: "Pesanan, event, dan pembayaran jastip TitipLailiYuk.",
     id: "/",
-    start_url: "/id/orders",
+    start_url: "/id/dashboard",
     scope: "/",
     display: "standalone",
     orientation: "portrait",

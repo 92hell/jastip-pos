@@ -3,7 +3,7 @@ import { expectAccessible, signInAsDemo } from "./support";
 
 test("the app can be installed: manifest, icons, iPhone home-screen icon, and a service worker that is never cached", async ({ page, request }) => {
   const manifest = await (await request.get("/manifest.webmanifest")).json();
-  expect(manifest).toMatchObject({ name: "Titip Laili Yuk", display: "standalone", start_url: "/id/orders", theme_color: "#9fd8fd" });
+  expect(manifest).toMatchObject({ name: "Titip Laili Yuk", display: "standalone", start_url: "/id/dashboard", theme_color: "#9fd8fd" });
   expect(manifest.icons.map((i: { purpose: string; sizes: string }) => `${i.purpose} ${i.sizes}`)).toEqual(["any 192x192", "any 512x512", "maskable 512x512"]);
   for (const icon of [...manifest.icons.map((i: { src: string }) => i.src), "/icons/apple-touch-icon.png"]) {
     const response = await request.get(icon);

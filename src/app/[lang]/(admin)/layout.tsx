@@ -12,6 +12,7 @@ import { logout } from "../login/actions";
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const { locale, t } = await currentLocale();
   const tabs = [
+    { href: `/${locale}/dashboard`, label: t.nav.dashboard, icon: "🏠" },
     { href: `/${locale}/orders`, label: t.nav.orders, icon: "🧾" },
     { href: `/${locale}/events`, label: t.nav.events, icon: "🛍️" },
     { href: `/${locale}/clients`, label: t.nav.clients, icon: "👥" },

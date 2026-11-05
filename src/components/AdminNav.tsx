@@ -14,7 +14,7 @@ type Tab = { href: string; label: string; icon: string };
 export function BottomNav({ tabs, label, path = "" }: { tabs: Tab[]; label: string; path?: string }) {
   return (
     <nav aria-label={label} className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] sm:hidden">
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {tabs.map((tab) => {
           const current = path === tab.href || path.startsWith(`${tab.href}/`);
           return (
