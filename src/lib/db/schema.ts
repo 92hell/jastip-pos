@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, boolean, check, date, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, customType, date, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 /** People who run the shop: the owner (Laili) and any helpers she adds later. Clients never sign in. */
 export const users = pgTable("users", {
@@ -115,6 +115,13 @@ export const orders = pgTable(
     note: text("note").notNull().default(""),
     courier: text("courier").notNull().default(""),
     trackingNumber: text("tracking_number").notNull().default(""),
+    /** DP she asks for first, as a percentage of the total; null for none. */
+    dpPercent: integer("dp_percent"),
+    /**
+     * The secret part of the client's invoice link (/i/<token>): 128 random bits. Anyone with the
+     * link can see the invoice, so it can be replaced with a new one.
+     */
+    invoiceToken: text("invoice_token").notNull().unique().default(sql`replace(gen_random_uuid()::text, '-', '')`),
     shippedAt: timestamp("shipped_at", { withTimezone: true }),
     discount: money("discount").notNull().default(0),
     voucherApplied: boolean("voucher_applied").notNull().default(false),
@@ -179,7 +186,56 @@ export const orderCounters = pgTable("order_counters", {
   last: integer("last").notNull(),
 });
 
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
+
+export const PAYMENT_KINDS = ["payment", "refund", "to_credit"] as const;
+export type PaymentKind = (typeof PAYMENT_KINDS)[number];
+export const PAYMENT_METHODS = ["transfer", "qris", "cash", "credit"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+/**
+ * Money on an order: a payment from the client, a refund sent back, or an overpayment kept as the
+ * client's credit. Amounts are positive; the kind says which way the money went (src/lib/balance.ts).
+ */
+export const payments = pgTable(
+  "payments",
+  {
+    id: serial("id").primaryKey(),
+    orderId: integer("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: PAYMENT_KINDS }).notNull(),
+    method: text("method", { enum: PAYMENT_METHODS }),
+    amount: money("amount").notNull(),
+    paidOn: date("paid_on").notNull(),
+    note: text("note").notNull().default(""),
+    /** A photo of the transfer receipt, compressed in the browser; only the owner sees it. */
+    proof: bytea("proof"),
+    proofType: text("proof_type"),
+    createdBy: integer("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("payments_order_idx").on(t.orderId), check("payments_amount_positive", sql`${t.amount} > 0`)],
+);
+
+/** A client's credit: + when an overpayment is kept for them, − when they use it on an order. */
+export const clientCredits = pgTable(
+  "client_credits",
+  {
+    id: serial("id").primaryKey(),
+    clientId: integer("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    orderId: integer("order_id").references(() => orders.id, { onDelete: "set null" }),
+    paymentId: integer("payment_id").references(() => payments.id, { onDelete: "cascade" }),
+    amount: money("amount").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("client_credits_client_idx").on(t.clientId)],
+);
+
 export type User = typeof users.$inferSelect;
+export type Payment = typeof payments.$inferSelect;
 export type Client = typeof clients.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;

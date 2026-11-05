@@ -5,6 +5,7 @@ import { ensureOwner } from "@/lib/auth/accounts";
 import { createClient } from "@/lib/clients";
 import { createEvent } from "@/lib/events";
 import { createOrder, getOrder, setItemStatus, type OrderInput } from "@/lib/orders";
+import { recordPayment } from "@/lib/payments";
 import { DEFAULT_SETTINGS, updateSettings } from "@/lib/settings";
 
 /** Clearly fake accounts: the public demo never shows real bank details. */
@@ -15,7 +16,7 @@ export const DEMO_ACCOUNTS = [
 
 /** Puts the public demo back to its starting point: the demo admin and the sample shop settings. */
 export async function resetDemo(db: Db, admin: { username: string; password: string }) {
-  await db.execute(sql`TRUNCATE users, sessions, business_settings, clients, orders, order_bundles, order_items, order_counters, events RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE users, sessions, business_settings, clients, orders, order_bundles, order_items, order_counters, events, payments, client_credits RESTART IDENTITY CASCADE`);
   await ensureOwner(db, { ...admin, displayName: "Laili (demo)" });
   const saved = await updateSettings(db, {
     ...DEFAULT_SETTINGS,
@@ -50,14 +51,14 @@ async function seedOrders(db: Db) {
   });
   const orders: OrderInput[] = [
     {
-      clientId: siti, eventId: trip.id, note: "Warna navy kalau ada", discount: "", applyVoucher: true, shipping: "18rb", bundles: [],
+      clientId: siti, eventId: trip.id, note: "Warna navy kalau ada", discount: "", dpPercent: "50", applyVoucher: true, shipping: "18rb", bundles: [],
       items: [
         item("Tas Charles & Keith", "Grand Indonesia", "899rb", { feeMode: "per_item", feeAmount: "50rb" }),
         item("Parfum Zara 100ml", "Zara AEON BSD", "459rb", { feeMode: "nett" }),
       ],
     },
     {
-      clientId: dina, eventId: trip.id, note: "Untuk dijual lagi", discount: "", applyVoucher: false, shipping: "", bundles: [{ key: "b1", label: "Skincare", fee: "60rb" }],
+      clientId: dina, eventId: trip.id, note: "Untuk dijual lagi", discount: "", dpPercent: "50", applyVoucher: false, shipping: "", bundles: [{ key: "b1", label: "Skincare", fee: "60rb" }],
       items: [
         item("Serum Somethinc", "Watsons", "149rb", { feeMode: "bundle", bundle: "b1" }, 3),
         item("Toner Avoskin", "Guardian", "135rb", { feeMode: "bundle", bundle: "b1" }, 2),
@@ -80,4 +81,9 @@ async function seedOrders(db: Db) {
   await setItemStatus(db, ids[0], bag.id, "bought");
   const toner = (await getOrder(db, ids[1]))!.items[1];
   await setItemStatus(db, ids[1], toner.id, "sold_out");
+  // Siti paid her 50% DP; Maya paid everything.
+  const today = day(0);
+  const siti50 = Math.ceil((await getOrder(db, ids[0]))!.total / 2);
+  await recordPayment(db, ids[0], { amount: String(siti50), method: "transfer", paidOn: today, note: "DP" }, null);
+  await recordPayment(db, ids[2], { amount: String((await getOrder(db, ids[2]))!.total), method: "qris", paidOn: today, note: "" }, null);
 }

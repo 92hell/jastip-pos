@@ -5,6 +5,7 @@ import { formatDate, rupiah } from "@/i18n";
 import { currentLocale } from "@/i18n/server";
 import { requireUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
+import { orderBalance } from "@/lib/balance";
 import { listOrders } from "@/lib/orders";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -53,8 +54,8 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/[lang]/order
                   {o.isReseller && <span className="ml-2 rounded-full bg-sky px-2 py-0.5 text-xs font-bold">{t.orders.reseller}</span>}
                 </span>
                 <span className="text-right font-semibold">{rupiah(o.total, locale)}</span>
-                <span className="text-sm text-muted">{o.number}</span>
-                <span className="text-right text-sm text-muted">{formatDate(o.createdAt, locale)}</span>
+                <span className="text-sm text-muted">{o.number} · {formatDate(o.createdAt, locale)}</span>
+                <span className="text-right text-sm font-semibold">{t.payments.statuses[orderBalance(o.total, o.dpPercent, [{ kind: "payment", amount: o.paid }]).status]}</span>
               </Link>
             </li>
           ))}

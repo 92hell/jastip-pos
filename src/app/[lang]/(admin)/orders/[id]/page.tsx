@@ -4,15 +4,20 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ActionButton } from "@/components/ConfirmButton";
 import { FormStatus } from "@/components/Field";
-import { fill, formatDate, rupiah } from "@/i18n";
+import { fill, formatDate, formatDay, rupiah } from "@/i18n";
 import { currentLocale } from "@/i18n/server";
 import { requireUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
 import { formatPercent } from "@/lib/money";
 import { getOrder } from "@/lib/orders";
 import { waLink } from "@/lib/whatsapp";
-import { cancelItem, shipOrder } from "../actions";
+import { orderMoney } from "@/lib/payments";
+import { jakartaToday, publicUrl } from "@/lib/server/public-url";
+import { getSettings } from "@/lib/settings";
+import { cancelItem, newInvoiceLink, removePayment, settle, shipOrder } from "../actions";
+import { InvoiceShare } from "./InvoiceShare";
 import { ReplaceForm, StatusControl } from "./ItemControls";
+import { PaymentForm } from "./PaymentForm";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await currentLocale();
@@ -36,6 +41,15 @@ async function OrderDetailView({ params, searchParams }: PageProps<"/[lang]/orde
   if (!order) notFound();
   const saved = (await searchParams).saved === "1";
   const money = (n: number) => rupiah(n, locale);
+  const [cash, settings, base] = await Promise.all([orderMoney(getDb(), order.id), getSettings(getDb()), publicUrl()]);
+  const { balance } = cash!;
+  const today = jakartaToday();
+  const invoiceLink = `${base}/${locale}/i/${order.invoiceToken}`;
+  const invoiceMessage = fill(t.payments.invoiceMessage, {
+    client: order.client.name, number: order.number, shop: settings.shopName, link: invoiceLink,
+    total: money(order.total), paid: money(balance.paid), due: money(balance.due),
+  });
+  const statusTone = { unpaid: "bg-red-50 text-danger", partial: "bg-amber-50 text-ink", dp_paid: "bg-sky text-ink", paid: "bg-green-50 text-success", overpaid: "bg-amber-50 text-ink" }[balance.status];
   const bundleLabel = new Map(order.bundles.map((b, i) => [b.id, b.label || fill(t.orders.bundleN, { n: i + 1 })]));
   const feeText = (item: (typeof order.items)[number]) => {
     switch (item.feeMode) {
@@ -121,6 +135,66 @@ async function OrderDetailView({ params, searchParams }: PageProps<"/[lang]/orde
           ))}
         </ul>
         {order.note && <p className="mt-3 rounded-2xl bg-sky-soft p-3">{order.note}</p>}
+      </section>
+
+      <section aria-labelledby="order-payments" className="mt-4 rounded-3xl bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 id="order-payments" className="font-display text-2xl">{t.payments.title}</h2>
+          <span className={`rounded-full px-3 py-1 text-sm font-bold ${statusTone}`}>{t.payments.statuses[balance.status]}</span>
+        </div>
+        <dl className="mt-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
+          <dt>{t.payments.paid}</dt><dd className="text-right font-semibold">{money(balance.paid)}</dd>
+          <dt>{t.payments.due}</dt><dd className="text-right font-semibold">{money(balance.due)}</dd>
+          {balance.dpAmount !== null && order.dpPercent !== null && (
+            <><dt>{fill(t.payments.dp, { percent: order.dpPercent })}</dt><dd className="text-right">{money(balance.dpAmount)}{balance.dpDue > 0 ? ` (${t.payments.dpDue} ${money(balance.dpDue)})` : " ✓"}</dd></>
+          )}
+        </dl>
+        {cash!.credit > 0 && <p className="mt-2 rounded-xl bg-sky-soft p-2 text-sm font-semibold">{fill(t.payments.credit, { amount: money(cash!.credit) })}</p>}
+        {cash!.payments.length === 0 ? (
+          <p className="mt-3 text-muted">{t.payments.none}</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-line">
+            {cash!.payments.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
+                <span className="font-semibold">{p.kind === "payment" ? "" : "− "}{money(p.amount)}</span>
+                <span className="text-sm text-muted">
+                  {t.payments.kinds[p.kind]}{p.method ? ` · ${t.payments.methods[p.method]}` : ""} · {formatDay(p.paidOn, locale)}{p.note ? ` · ${p.note}` : ""}
+                </span>
+                {p.hasProof && <a href={`/api/proofs/${p.id}`} target="_blank" rel="noopener" className="text-sm font-semibold text-primary underline">{t.payments.viewProof}</a>}
+                <div className="ml-auto">
+                  <ActionButton action={removePayment} fields={{ locale, orderId: order.id, paymentId: p.id }} confirmText={t.payments.removeConfirm}
+                    label={`${t.payments.remove}: ${money(p.amount)} ${formatDay(p.paidOn, locale)}`}
+                    className="rounded-full border border-danger px-3 py-1 text-sm font-semibold text-danger hover:bg-red-50">{t.payments.remove}</ActionButton>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {balance.overpaid > 0 && (
+          <div className="mt-3 space-y-2 rounded-2xl bg-amber-50 p-3">
+            <p className="font-semibold">{fill(t.payments.overpaid, { amount: money(balance.overpaid) })}</p>
+            <div className="flex flex-wrap gap-2">
+              <ActionButton action={settle} fields={{ locale, orderId: order.id, how: "refund", paidOn: today }} className="rounded-full bg-primary px-4 py-2 font-semibold text-white hover:bg-primary-dark">
+                {fill(t.payments.refund, { amount: money(balance.overpaid) })}
+              </ActionButton>
+              <ActionButton action={settle} fields={{ locale, orderId: order.id, how: "credit", paidOn: today }} className="rounded-full border-2 border-ink px-4 py-2 font-semibold hover:bg-white">
+                {fill(t.payments.toCredit, { amount: money(balance.overpaid) })}
+              </ActionButton>
+            </div>
+          </div>
+        )}
+        {balance.due > 0 && (
+          <PaymentForm locale={locale} orderId={order.id} suggested={balance.dpDue > 0 ? balance.dpDue : balance.due} today={today}
+            credit={Math.min(cash!.credit, balance.due)} t={t.payments} errorsText={t.errors} />
+        )}
+        <div className="mt-4 border-t border-line pt-4">
+          <InvoiceShare link={invoiceLink} whatsappHref={order.client.whatsapp ? waLink(order.client.whatsapp, invoiceMessage) : null}
+            labels={{ title: t.payments.invoiceLink, send: t.payments.sendInvoice, copy: t.payments.copyLink, copied: t.payments.copied }} />
+          <div className="mt-2">
+            <ActionButton action={newInvoiceLink} fields={{ locale, orderId: order.id }} confirmText={t.payments.renewConfirm}
+              className="text-sm font-semibold text-muted underline">{t.payments.renewLink}</ActionButton>
+          </div>
+        </div>
       </section>
 
       <section aria-labelledby="order-shipping" className="mt-4 rounded-3xl bg-white p-5 shadow-sm">

@@ -17,7 +17,7 @@ export type OrderFormItem = {
 export type OrderFormBundle = { key: string; label: string; fee: string };
 export type OrderFormValues = {
   clientId: string; eventId: string; note: string; items: OrderFormItem[]; bundles: OrderFormBundle[];
-  discount: string; applyVoucher: boolean; shipping: string;
+  discount: string; dpPercent: string; applyVoucher: boolean; shipping: string;
 };
 
 type Props = {
@@ -228,6 +228,10 @@ export function OrderForm({ locale, id, initial, clients, events, noEventLabel, 
           <Field id={`${uid}-discount`} label={t.discount} error={error("discount")}>
             {(describedBy) => <input id={`${uid}-discount`} value={values.discount} inputMode="numeric" onChange={(e) => setValues((v) => ({ ...v, discount: e.target.value }))}
               aria-invalid={Boolean(error("discount"))} aria-describedby={describedBy} className={inputClass(Boolean(error("discount")))} />}
+          </Field>
+          <Field id={`${uid}-dpPercent`} label={t.dpPercent} hint={t.dpPercentHint} error={error("dpPercent")}>
+            {(describedBy) => <input id={`${uid}-dpPercent`} value={values.dpPercent} inputMode="numeric" onChange={(e) => setValues((v) => ({ ...v, dpPercent: e.target.value }))}
+              aria-invalid={Boolean(error("dpPercent"))} aria-describedby={describedBy} className={inputClass(Boolean(error("dpPercent")))} />}
           </Field>
           <Field id={`${uid}-shipping`} label={t.shipping} hint={t.shippingHint} error={error("shipping")}>
             {(describedBy) => <input id={`${uid}-shipping`} value={values.shipping} inputMode="numeric" onChange={(e) => setValues((v) => ({ ...v, shipping: e.target.value }))}

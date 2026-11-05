@@ -9,6 +9,7 @@ import { requireUser } from "@/lib/auth/current-user";
 import { getClient } from "@/lib/clients";
 import { getDb } from "@/lib/db";
 import { listOrders } from "@/lib/orders";
+import { clientCredit } from "@/lib/payments";
 import { waLink } from "@/lib/whatsapp";
 import { ClientForm } from "../ClientForm";
 import { DeleteClient } from "../DeleteClient";
@@ -35,6 +36,7 @@ async function ClientDetail({ params, searchParams }: PageProps<"/[lang]/clients
   if (!client || client.anonymizedAt) notFound();
   const saved = (await searchParams).saved === "1";
   const orders = await listOrders(getDb(), { clientId: id });
+  const credit = await clientCredit(getDb(), id);
 
   return (
     <>
@@ -53,6 +55,7 @@ async function ClientDetail({ params, searchParams }: PageProps<"/[lang]/clients
         </div>
       </div>
       {saved && <div className="mb-4"><FormStatus saved={t.clients.saved} /></div>}
+      {credit > 0 && <p className="mb-4 rounded-2xl bg-sky p-3 font-semibold">{fill(t.payments.credit, { amount: rupiah(credit, locale) })}</p>}
 
       <section aria-labelledby="client-orders" className="mb-6 rounded-3xl bg-white p-5 shadow-sm">
         <h2 id="client-orders" className="font-display text-2xl">{t.clients.ordersTitle}</h2>

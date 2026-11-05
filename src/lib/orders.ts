@@ -84,6 +84,11 @@ export const orderSchema = z
     items: z.array(itemSchema).min(1, "no_items").max(MAX_ITEMS, "too_many"),
     bundles: z.array(z.object({ key: z.string().min(1).max(20), label: z.string().trim().max(60, "too_long"), fee: rupiahField() })).max(20, "too_many"),
     discount: rupiahField(true),
+    /** DP to ask for first, in percent; empty for none. */
+    dpPercent: z
+      .union([z.literal(""), z.null(), z.coerce.number().int("invalid_percent").min(1, "invalid_percent").max(100, "invalid_percent")])
+      .optional()
+      .transform((v) => (v === "" || v === undefined ? null : v)),
     applyVoucher: z.boolean(),
     shipping: rupiahField(true),
   })
@@ -168,6 +173,7 @@ async function writeLines(tx: Db, orderId: number, { order, priced, existing }: 
 function totals({ order, priced }: Prepared) {
   return {
     eventId: order.eventId,
+    dpPercent: order.dpPercent,
     note: order.note,
     discount: priced.discount,
     voucherApplied: order.applyVoucher,
@@ -368,14 +374,22 @@ export async function getOrder(db: Db, id: number): Promise<OrderDetail | null> 
   return { ...row.order, client: row.client, event: row.event?.id ? row.event : null, bundles, items };
 }
 
-export type OrderRow = Pick<Order, "id" | "number" | "total" | "createdAt"> & { clientName: string; clientId: number; isReseller: boolean };
+export type OrderRow = Pick<Order, "id" | "number" | "total" | "createdAt" | "dpPercent"> & {
+  clientName: string; clientId: number; isReseller: boolean;
+  /** Kept by her so far: payments minus refunds and money moved to credit. */
+  paid: number;
+};
 
 /** Orders, newest first, searched by number or client name; optionally for one client. */
 export async function listOrders(db: Db, { q = "", clientId, eventId }: { q?: string; clientId?: number; eventId?: number } = {}, limit = 50): Promise<OrderRow[]> {
   const term = q.trim();
   const search = term ? or(ilike(orders.number, `%${escapeLike(term)}%`), ilike(clients.name, `%${escapeLike(term)}%`)) : undefined;
   return db
-    .select({ id: orders.id, number: orders.number, total: orders.total, createdAt: orders.createdAt, clientName: clients.name, clientId: clients.id, isReseller: clients.isReseller })
+    .select({
+      id: orders.id, number: orders.number, total: orders.total, createdAt: orders.createdAt, dpPercent: orders.dpPercent,
+      clientName: clients.name, clientId: clients.id, isReseller: clients.isReseller,
+      paid: sql<number>`coalesce((select sum(case when p.kind = 'payment' then p.amount else -p.amount end) from payments p where p.order_id = ${orders.id}), 0)::bigint`.mapWith(Number),
+    })
     .from(orders)
     .innerJoin(clients, eq(clients.id, orders.clientId))
     .where(clientId ? eq(orders.clientId, clientId) : eventId ? eq(orders.eventId, eventId) : search)

@@ -45,7 +45,7 @@ async function NewOrder({ searchParams }: { searchParams: PageProps<"/[lang]/ord
       initial={{
         clientId: clients.some((c) => String(c.id) === preselect) ? preselect : "",
         eventId: events.some((e) => String(e.id) === event) ? event : "",
-        note: "", discount: "", applyVoucher: false, shipping: "", bundles: [],
+        note: "", discount: "", dpPercent: "", applyVoucher: false, shipping: "", bundles: [],
         items: [{ key: 1, name: "", store: "", quantity: "1", unitPrice: "", feeMode: "per_item", feeAmount: "", feePercent: "", bundle: "" }],
       }} />
   );

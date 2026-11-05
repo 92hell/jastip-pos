@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { ITEM_STATUSES, type ItemStatus } from "@/lib/db/schema";
 import { cancelSoldOut, createOrder, markShipped, replaceSoldOut, setItemStatus, updateOrder, type OrderInput } from "@/lib/orders";
 import { formId, formLocale, formText } from "@/lib/server/forms";
+import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/db/schema";
+import { deletePayment, recordPayment, renewInvoiceLink, settleOverpayment } from "@/lib/payments";
 import { isLocale, type Locale } from "@/i18n";
 import { requireUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
@@ -65,5 +67,44 @@ export async function replaceItem(_state: ReplaceState, form: FormData): Promise
 export async function shipOrder(form: FormData) {
   await requireUser(formLocale(form));
   await markShipped(getDb(), formId(form, "orderId"), { courier: formText(form, "courier"), trackingNumber: formText(form, "trackingNumber") });
+  refresh();
+}
+
+export type PaymentState = { errors?: FieldErrors; savedAt?: number };
+
+/** Records a payment; the proof photo arrives already made smaller by the browser. */
+export async function savePayment(_state: PaymentState, form: FormData): Promise<PaymentState> {
+  const user = await requireUser(formLocale(form));
+  const file = form.get("proof");
+  const proof = file instanceof File && file.size > 0 ? new Uint8Array(await file.arrayBuffer()) : null;
+  const method = formText(form, "method") as PaymentMethod;
+  const result = await recordPayment(getDb(), formId(form, "orderId"), {
+    amount: formText(form, "amount"),
+    method: PAYMENT_METHODS.includes(method) ? method : "transfer",
+    paidOn: formText(form, "paidOn"),
+    note: formText(form, "note"),
+    proof,
+  }, user.id);
+  if (!result.ok) return { errors: result.errors };
+  refresh();
+  return { savedAt: Date.now() };
+}
+
+export async function removePayment(form: FormData) {
+  await requireUser(formLocale(form));
+  await deletePayment(getDb(), formId(form, "orderId"), formId(form, "paymentId"));
+  refresh();
+}
+
+export async function settle(form: FormData) {
+  const user = await requireUser(formLocale(form));
+  const how = formText(form, "how") === "credit" ? "credit" : "refund";
+  await settleOverpayment(getDb(), formId(form, "orderId"), how, { paidOn: formText(form, "paidOn") }, user.id);
+  refresh();
+}
+
+export async function newInvoiceLink(form: FormData) {
+  await requireUser(formLocale(form));
+  await renewInvoiceLink(getDb(), formId(form, "orderId"));
   refresh();
 }
