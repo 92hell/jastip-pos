@@ -110,4 +110,28 @@ describe("Pricing an order", () => {
     ];
     for (const input of bad) expect(() => priceOrder(input), JSON.stringify(input)).toThrow(RangeError);
   });
+
+  it("a sold-out item is not charged: neither its price nor its fee", () => {
+    const p = priceOrder(order({
+      items: [
+        { quantity: 1, unitPrice: 350_000, fee: { mode: "per_item", amount: 25_000 } },
+        { quantity: 2, unitPrice: 100_000, fee: { mode: "percent", basisPoints: 1000 }, soldOut: true },
+      ],
+    }));
+
+    expect(p.lines).toEqual([{ subtotal: 350_000, fee: 25_000 }, { subtotal: 0, fee: 0 }]);
+    expect(p.total).toBe(375_000);
+  });
+
+  it("a bundle keeps its fee while any of its items is still coming, and drops it when all are sold out", () => {
+    const bundle = (soldOut: [boolean, boolean]) =>
+      priceOrder(order({
+        bundles: [{ key: "a", fee: 50_000 }],
+        items: soldOut.map((s) => ({ quantity: 1, unitPrice: 100_000, fee: { mode: "bundle" as const, bundle: "a" }, soldOut: s })),
+      }));
+
+    expect(bundle([false, true]).bundleFees).toEqual([{ key: "a", fee: 50_000, items: 1 }]);
+    expect(bundle([true, true]).bundleFees).toEqual([{ key: "a", fee: 0, items: 0 }]);
+    expect(bundle([true, true]).total).toBe(0);
+  });
 });

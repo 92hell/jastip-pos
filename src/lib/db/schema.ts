@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, boolean, check, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, date, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 /** People who run the shop: the owner (Laili) and any helpers she adds later. Clients never sign in. */
 export const users = pgTable("users", {
@@ -69,6 +69,38 @@ export const clients = pgTable(
 
 const money = (name: string) => bigint(name, { mode: "number" });
 
+/** What kind of event orders belong to. */
+export const EVENT_KINDS = ["trip", "bazaar", "wholesale", "other"] as const;
+export type EventKind = (typeof EVENT_KINDS)[number];
+
+/**
+ * Something she takes orders for: a shopping trip or open PO ("Jastip Singapore 12–15 Des"), a
+ * bazaar, a wholesale sale of excess stock, or anything else. One-off orders belong to no event.
+ */
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  kind: text("kind", { enum: EVENT_KINDS }).notNull().default("trip"),
+  name: text("name").notNull(),
+  location: text("location").notNull().default(""),
+  startsOn: date("starts_on").notNull(),
+  endsOn: date("ends_on").notNull(),
+  /** Last day to order; null when open until she closes it. */
+  orderDeadline: date("order_deadline"),
+  note: text("note").notNull().default(""),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Where an item is: asked for, bought, arrived with her, packed, sent to the client, or sold out. */
+export const ITEM_STATUSES = ["requested", "bought", "arrived", "packed", "shipped", "sold_out"] as const;
+export type ItemStatus = (typeof ITEM_STATUSES)[number];
+/**
+ * A sold-out item, after she has asked the client: waiting for their answer, swapped for a similar
+ * item (a new line in the same order), or called off. It is never charged.
+ */
+export const SOLD_OUT_RESOLUTIONS = ["waiting", "replaced", "cancelled"] as const;
+export type SoldOutResolution = (typeof SOLD_OUT_RESOLUTIONS)[number];
+
 /** An order: what a client asked for, priced by src/lib/pricing.ts. Totals are stored as priced on save. */
 export const orders = pgTable(
   "orders",
@@ -79,7 +111,11 @@ export const orders = pgTable(
     clientId: integer("client_id")
       .notNull()
       .references(() => clients.id, { onDelete: "restrict" }),
+    eventId: integer("event_id").references(() => events.id, { onDelete: "restrict" }),
     note: text("note").notNull().default(""),
+    courier: text("courier").notNull().default(""),
+    trackingNumber: text("tracking_number").notNull().default(""),
+    shippedAt: timestamp("shipped_at", { withTimezone: true }),
     discount: money("discount").notNull().default(0),
     voucherApplied: boolean("voucher_applied").notNull().default(false),
     /** The voucher actually taken off (it never takes the total below zero). */
@@ -93,7 +129,7 @@ export const orders = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("orders_client_idx").on(t.clientId), index("orders_created_idx").on(t.createdAt)],
+  (t) => [index("orders_client_idx").on(t.clientId), index("orders_event_idx").on(t.eventId), index("orders_created_idx").on(t.createdAt)],
 );
 
 /** Several items sharing one flat fee ("bundling fee 50rb"). */
@@ -125,9 +161,14 @@ export const orderItems = pgTable(
     feeAmount: money("fee_amount"),
     /** percent: basis points (1000 = 10%). */
     feeBasisPoints: integer("fee_basis_points"),
-    bundleId: integer("bundle_id").references(() => orderBundles.id, { onDelete: "cascade" }),
+    bundleId: integer("bundle_id").references(() => orderBundles.id, { onDelete: "set null" }),
     subtotal: money("subtotal").notNull(),
     fee: money("fee").notNull(),
+    status: text("status", { enum: ITEM_STATUSES }).notNull().default("requested"),
+    soldOutResolution: text("sold_out_resolution", { enum: SOLD_OUT_RESOLUTIONS }),
+    /** The sold-out item this one replaces. */
+    replacesItemId: integer("replaces_item_id"),
+    statusChangedAt: timestamp("status_changed_at", { withTimezone: true }),
   },
   (t) => [index("order_items_order_idx").on(t.orderId)],
 );
@@ -142,4 +183,5 @@ export type User = typeof users.$inferSelect;
 export type Client = typeof clients.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
+export type ShopEvent = typeof events.$inferSelect;
 export type BusinessSettings = typeof businessSettings.$inferSelect;

@@ -1,10 +1,13 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { ITEM_STATUSES, type ItemStatus } from "@/lib/db/schema";
+import { cancelSoldOut, createOrder, markShipped, replaceSoldOut, setItemStatus, updateOrder, type OrderInput } from "@/lib/orders";
+import { formId, formLocale, formText } from "@/lib/server/forms";
 import { isLocale, type Locale } from "@/i18n";
 import { requireUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db";
-import { createOrder, updateOrder, type OrderInput } from "@/lib/orders";
 import type { FieldErrors } from "@/lib/settings";
 
 export type OrderState = { errors?: FieldErrors };
@@ -27,4 +30,40 @@ export async function saveOrder(_state: OrderState, form: FormData): Promise<Ord
   const result = id ? await updateOrder(getDb(), id, input) : await createOrder(getDb(), input, user.id);
   if (!result.ok) return { errors: result.errors };
   redirect(`/${locale}/orders/${result.id}?saved=1`);
+}
+
+
+/** Sets one item's status (from the order page or the shopping list). */
+export async function changeItemStatus(form: FormData) {
+  await requireUser(formLocale(form));
+  const status = formText(form, "status") as ItemStatus;
+  if (!ITEM_STATUSES.includes(status)) return;
+  await setItemStatus(getDb(), formId(form, "orderId"), formId(form, "itemId"), status);
+  refresh();
+}
+
+export async function cancelItem(form: FormData) {
+  await requireUser(formLocale(form));
+  await cancelSoldOut(getDb(), formId(form, "orderId"), formId(form, "itemId"));
+  refresh();
+}
+
+export type ReplaceState = { errors?: FieldErrors; done?: boolean };
+
+export async function replaceItem(_state: ReplaceState, form: FormData): Promise<ReplaceState> {
+  await requireUser(formLocale(form));
+  const result = await replaceSoldOut(getDb(), formId(form, "orderId"), formId(form, "itemId"), {
+    name: formText(form, "name"),
+    store: formText(form, "store"),
+    unitPrice: formText(form, "unitPrice"),
+  });
+  if (!result.ok) return { errors: result.errors };
+  refresh();
+  return { done: true };
+}
+
+export async function shipOrder(form: FormData) {
+  await requireUser(formLocale(form));
+  await markShipped(getDb(), formId(form, "orderId"), { courier: formText(form, "courier"), trackingNumber: formText(form, "trackingNumber") });
+  refresh();
 }
