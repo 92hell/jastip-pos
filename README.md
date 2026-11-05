@@ -216,7 +216,8 @@ a PostgreSQL database for the app (`E2E_DATABASE_URL`, default
   while in use.
 - Sign-in throttled: 5 failures per username and address, 20 per address, within 15 minutes. A
   wrong current password when changing it counts towards the same limit.
-- Changing the password ends every other session of that account. In the public demo it cannot
+- Changing the password ends every other session of that account; a forgotten one is reset from
+  the server's settings (`OWNER_PASSWORD_RESET`), never by email. In the public demo it cannot
   be changed, so every visitor can sign in.
 - Every page and Server Action checks the session itself; settings are owner-only. Next.js checks
   the `Origin` of every Server Action (CSRF).
@@ -228,6 +229,7 @@ a PostgreSQL database for the app (`E2E_DATABASE_URL`, default
 |---|---|---|
 | `DATABASE_URL` | (required) | PostgreSQL connection |
 | `OWNER_USERNAME`, `OWNER_PASSWORD`, `OWNER_NAME` | (none) | Owner account created on first start (password 12+ characters); later changes are made in the app |
+| `OWNER_PASSWORD_RESET` | (none) | A forgotten password: any new value puts the owner's password back to `OWNER_PASSWORD` once and signs out every device ([how](docs/DEPLOY.md#if-laili-forgets-her-password)) |
 | `DEMO_MODE` | `false` | Public demo: sample shop, fake payment accounts, demo sign-in, reset on every start (on the free plan: after every sleep) |
 | `TRUST_PROXY` | `false` | Behind a hosting proxy, use `X-Forwarded-For` for sign-in throttling |
 | `PUBLIC_URL` | (from the request) | Public address used in invoice links sent to clients |

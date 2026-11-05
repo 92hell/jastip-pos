@@ -43,6 +43,21 @@ The app creates its tables itself on first start (migrations), so the databases 
 
 Every push to `main` redeploys both. Pushes that only change docs, tests or the wake-up page do not.
 
+### If Laili forgets her password
+
+There is no "forgot password" email. Reset it from Render instead:
+
+1. Render → **titip-laili** → **Environment**.
+2. Set `OWNER_PASSWORD` to a new temporary password (12+ characters), and add
+   `OWNER_PASSWORD_RESET` with any new word, for example today's date `2026-11-05`.
+3. **Save, rebuild and deploy**. On start the app sets her password to `OWNER_PASSWORD` and signs
+   out every device (the log says so).
+4. She signs in with it, then picks her own in **Lainnya → Ganti kata sandi**.
+
+Each `OWNER_PASSWORD_RESET` value works once: the server restarting (it sleeps on the free plan)
+does not reset her password again. To reset it another time, use a different value. You can delete
+the variable afterwards.
+
 ## 3. Demo link (GitHub Pages)
 
 The demo sleeps, so the link to share is a small page that wakes it and opens it when it answers:

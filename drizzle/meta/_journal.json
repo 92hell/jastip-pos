@@ -29,6 +29,13 @@
       "when": 1793857730929,
       "tag": "0003_payments_and_invoices",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793871491203,
+      "tag": "0004_owner_password_recovery",
+      "breakpoints": true
     }
   ]
 }

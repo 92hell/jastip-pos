@@ -1,10 +1,11 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { hash, verify } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import { users, type User } from "@/lib/db/schema";
 import type { LoginLimiter } from "./login-limiter";
-import { deleteOtherSessions } from "./sessions";
+import { deleteOtherSessions, deleteUserSessions } from "./sessions";
 
 export const MIN_PASSWORD = 12;
 export const MAX_PASSWORD = 200;
@@ -68,6 +69,28 @@ export async function changePassword(
     await deleteOtherSessions(tx, user.id, who.keepToken);
   });
   return { ok: true };
+}
+
+/**
+ * For a forgotten password: puts the owner's password back to OWNER_PASSWORD and signs out every
+ * device, once per OWNER_PASSWORD_RESET code. The code (only its hash) is remembered, so the free
+ * server restarting with the same settings does not undo a password she has since chosen.
+ * Returns whether the password was reset.
+ */
+export async function recoverOwnerPassword(db: Db, owner: { username: string; password: string; code: string }): Promise<boolean> {
+  const [user] = await db.select().from(users).where(eq(users.username, normalizeUsername(owner.username)));
+  if (!user || user.role !== "owner") return false;
+  const code = createHash("sha256").update(owner.code).digest("hex");
+  if (user.recoveryCode === code) return false;
+  if (owner.password.length < MIN_PASSWORD) {
+    throw new Error(`The owner password must be at least ${MIN_PASSWORD} characters`);
+  }
+  const passwordHash = await hash(owner.password);
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ passwordHash, recoveryCode: code }).where(eq(users.id, user.id));
+    await deleteUserSessions(tx, user.id);
+  });
+  return true;
 }
 
 /**
