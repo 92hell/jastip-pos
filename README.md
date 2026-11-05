@@ -96,6 +96,11 @@ numbers or addresses. Payment accounts are entered in the app's settings; the de
 fake ones (`0000000000`, "Contoh Demo Jastip"). Her real clients live only in her own private copy,
 which keeps what an order needs and lets her delete a client (UU PDP).
 
+## Deploy
+
+Free on Render (two services: the public demo and Laili's own copy) with free Neon databases, plus
+a wake-up page on GitHub Pages for the demo link. Step by step: [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Run it locally
 
 Needs Node 22 and Docker.
@@ -156,6 +161,6 @@ a PostgreSQL database for the app (`E2E_DATABASE_URL`, default
 |---|---|---|
 | `DATABASE_URL` | (required) | PostgreSQL connection |
 | `OWNER_USERNAME`, `OWNER_PASSWORD`, `OWNER_NAME` | (none) | Owner account created on first start (password 12+ characters) |
-| `DEMO_MODE` | `false` | Public demo: sample shop, fake payment accounts, demo sign-in, reset on every start |
+| `DEMO_MODE` | `false` | Public demo: sample shop, fake payment accounts, demo sign-in, reset on every start (on the free plan: after every sleep) |
 | `TRUST_PROXY` | `false` | Behind a hosting proxy, use `X-Forwarded-For` for sign-in throttling |
 | `PUBLIC_URL` | (from the request) | Public address used in invoice links sent to clients |

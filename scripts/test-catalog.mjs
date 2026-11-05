@@ -7,12 +7,13 @@ const root = path.resolve(import.meta.dirname, "..");
 const files = (dir) =>
   readdirSync(dir).flatMap((name) => {
     const full = path.join(dir, name);
-    return statSync(full).isDirectory() ? files(full) : /\.(test|spec)\.ts$/.test(name) ? [full] : [];
+    return statSync(full).isDirectory() ? files(full) : /\.(test|spec)\.(ts|mjs)$/.test(name) ? [full] : [];
   });
 
 const sections = [
   ["Unit (Vitest)", "tests/unit", "Pure logic, no database."],
   ["Integration (Vitest + PostgreSQL)", "tests/integration", "Against a real PostgreSQL with the real migrations (Testcontainers, or TEST_DATABASE_URL in CI)."],
+  ["Wake-up page (Node test runner)", "wake", "The static page that wakes the sleeping demo: node --test wake/*.test.mjs."],
   ["End-to-end (Playwright)", "tests/e2e", "Whole journeys in Chromium against the built app in demo mode, at desktop and phone size, with axe accessibility checks."],
 ];
 
@@ -24,11 +25,13 @@ for (const [title, dir, note] of sections) {
   for (const file of files(path.join(root, dir)).sort()) {
     out.push(`### \`${path.relative(root, file)}\``, "");
     const text = readFileSync(file, "utf8");
-    for (const m of text.matchAll(/\b(describe|it|test)\(\s*"((?:[^"\\]|\\.)+)"/g)) {
-      if (m[1] === "describe") out.push("", `**${m[2]}**`, "");
+    // Names in double quotes (the TypeScript tests) or single quotes (the wake-up page's tests).
+    for (const m of text.matchAll(/\b(describe|it|test)\(\s*(?:"((?:[^"\\]|\\.)+)"|'((?:[^'\\]|\\.)+)')/g)) {
+      const name = m[2] ?? m[3];
+      if (m[1] === "describe") out.push("", `**${name}**`, "");
       else {
         count++;
-        out.push(`- ${m[2]}`);
+        out.push(`- ${name}`);
       }
     }
     out.push("");

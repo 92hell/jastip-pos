@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#9fd8fd" />
+    <title>Titip Laili Yuk · demo</title>
+    <meta name="description" content="Demo aplikasi jastip TitipLailiYuk: pesanan dengan fee per barang, bundling, persen atau NETT; event dan daftar belanja yang tetap jalan tanpa sinyal; DP, pembayaran dan link invoice untuk klien. Coba sebagai admin, tanpa daftar." />
+    <link rel="icon" href="icon-192.png" type="image/png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Titip Laili Yuk" />
+    <meta property="og:title" content="Titip Laili Yuk · demo aplikasi jastip" />
+    <meta property="og:description" content="Demo aplikasi jastip TitipLailiYuk: pesanan dengan fee per barang, bundling, persen atau NETT; event dan daftar belanja yang tetap jalan tanpa sinyal; DP, pembayaran dan link invoice untuk klien. Coba sebagai admin, tanpa daftar." />
+    <meta property="og:url" content="https://92hell.github.io/jastip-pos/" />
+    <meta property="og:image" content="https://92hell.github.io/jastip-pos/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Titip Laili Yuk app icon: TLY on sky blue" />
+    <meta name="twitter:card" content="summary" />
+    <style>
+      :root {
+        --paper: #e8f6ff;
+        --card: #ffffff;
+        --ink: #13212b;
+        --muted: #4b5d6b;
+        --rule: #c9e3f5;
+        --green: #0a5a8c;
+        --on-green: #ffffff;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #171a18;
+          --card: #202522;
+          --ink: #ece6d8;
+          --muted: #b3ab9c;
+          --rule: #39413c;
+          --green: #8cc5b0;
+          --on-green: #10201a;
+          color-scheme: dark;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        background: var(--paper);
+        color: var(--ink);
+        font: 1.05rem/1.55 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 34rem;
+        background: var(--card);
+        border: 1px solid var(--rule);
+        border-radius: 24px;
+        padding: 28px 24px;
+      }
+      .brand { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 0.95rem; }
+      .brand img { width: 28px; height: 28px; }
+      h1 { font-family: Lora, Georgia, serif; font-weight: 600; font-size: 1.6rem; margin: 16px 0 8px; }
+      p { margin: 0 0 16px; }
+      .status { display: flex; align-items: center; gap: 10px; font-weight: 600; min-height: 1.6em; }
+      .spinner {
+        flex: none;
+        width: 18px;
+        height: 18px;
+        border: 3px solid var(--rule);
+        border-top-color: var(--green);
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      .done .spinner { display: none; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+      .actions { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-top: 20px; }
+      .button {
+        display: inline-block;
+        background: var(--green);
+        color: var(--on-green);
+        text-decoration: none;
+        font-weight: 600;
+        padding: 10px 16px;
+        border-radius: 8px;
+      }
+      a { color: var(--green); }
+      .visually-hidden {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      a:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand"><img src="icon-192.png" alt="" /> Titip Laili Yuk</div>
+      <h1 id="heading">Waking up the demo…</h1>
+      <p id="explain">The demo runs on a free server that sleeps when nobody is using it. Starting it takes about a minute; you will be taken there as soon as it is ready.</p>
+      <div class="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="status" aria-hidden="true">Checking whether the demo is awake…</span>
+        <span id="spoken" class="visually-hidden" role="status"></span>
+      </div>
+      <div class="actions">
+        <a id="open" class="button" href="https://titip-laili-demo.onrender.com/">Open the demo now</a>
+        <a id="source" href="https://github.com/92hell/jastip-pos">Source code on GitHub</a>
+      </div>
+    </main>
+    <script type="module">
+      import { APP_URL, TEXT, pickLanguage, pingApp, waitUntilAwake } from './wake.js';
+
+      const lang = pickLanguage(navigator.languages ?? [navigator.language]);
+      const text = TEXT[lang];
+      document.documentElement.lang = lang;
+      for (const key of ['heading', 'explain', 'open', 'source']) document.getElementById(key).textContent = text[key];
+      // The counter on screen moves every few seconds; screen readers hear it every 20 seconds.
+      const status = document.getElementById('status');
+      const spoken = document.getElementById('spoken');
+      let lastSpoken = 0;
+      const show = (message, speak) => {
+        status.textContent = message;
+        if (speak) spoken.textContent = message;
+      };
+      show(text.checking, true);
+
+      const { awake } = await waitUntilAwake({
+        ping: () => pingApp(APP_URL),
+        wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+        now: () => Date.now(),
+        onTick: (ms) => {
+          const s = Math.round(ms / 1000);
+          const speak = s - lastSpoken >= 20;
+          if (speak) lastSpoken = s;
+          show(text.starting.replace('{s}', s), speak);
+        },
+      });
+      document.querySelector('.status').classList.add('done');
+      show(awake ? text.ready : text.slow, true);
+      if (awake) location.replace(`${APP_URL}/`);
+    </script>
+  </body>
+</html>

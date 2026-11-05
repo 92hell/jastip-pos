@@ -12,7 +12,7 @@ export const en: Dictionary = {
     loading: "Loading…",
     skipToContent: "Skip to content",
     offline: "You are offline. Shopping lists still work; ticks are sent when there is signal.",
-    demoBanner: "This is a public demo: please don't enter real personal data. Everything resets every night.",
+    demoBanner: "This is a public demo: please don't enter real personal data. Everything resets regularly.",
   },
   shop: {
     rules: "Jastip rules",

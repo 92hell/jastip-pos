@@ -70,3 +70,10 @@ test("signing out forgets the saved lists and unsent ticks on this phone", async
   expect(await page.evaluate(() => localStorage.getItem("jastip-pending"))).toBeNull();
   await expect.poll(() => page.evaluate(async () => (await caches.keys()).includes("pages-v1"))).toBe(false);
 });
+
+test("the host's health check sees the app and its database", async ({ request }) => {
+  const response = await request.get("/api/health");
+  expect(response.status()).toBe(200);
+  expect(await response.json()).toEqual({ status: "ok" });
+  expect(response.headers()["cache-control"]).toContain("no-store");
+});
