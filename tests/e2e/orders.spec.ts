@@ -87,3 +87,48 @@ test("the order form refuses what is not an amount, marks it, and keeps everythi
   await expect(item.getByLabel("Nama barang")).toHaveValue("Jaket");
   await expectAccessible(page, "order form with errors");
 });
+
+test("a sold-out item is swapped for a similar one, another is called off, and the order is shipped", async ({ page }) => {
+  await signInAsDemo(page);
+  const name = `Lia ${Date.now().toString(36).slice(-5)}`;
+  await newClient(page, name);
+  await page.getByRole("link", { name: "+ Pesanan baru" }).click();
+  let item = page.getByRole("group", { name: "Barang 1" });
+  await item.getByLabel("Nama barang").fill("Serum A");
+  await item.getByLabel("Harga satuan").fill("200rb");
+  await item.getByLabel("Fee per barang").fill("20rb");
+  await page.getByRole("button", { name: "+ Tambah barang" }).click();
+  item = page.getByRole("group", { name: "Barang 2" });
+  await item.getByLabel("Nama barang").fill("Masker");
+  await item.getByLabel("Harga satuan").fill("50rb");
+  await page.getByRole("button", { name: "Simpan pesanan" }).click();
+  const total = page.getByRole("region", { name: "Ringkasan" }).getByRole("definition").last();
+  await expect(total).toHaveText(rp("290.000"));
+
+  await page.getByLabel("Status Serum A").selectOption({ label: "Sold out" });
+  await page.getByRole("button", { name: "Simpan", exact: true }).first().click();
+  await expect(page.getByText("menunggu jawaban klien")).toBeVisible();
+  await expect(total).toHaveText(rp("70.000"));
+  await expectAccessible(page, "order with a sold-out item");
+
+  await page.getByText("Ganti dengan yang mirip").click();
+  await page.getByRole("textbox", { name: "Barang pengganti" }).fill("Serum B");
+  await page.getByRole("textbox", { name: "Harga satuan", exact: true }).fill("180rb");
+  await page.getByRole("button", { name: "Simpan pengganti" }).click();
+  await expect(page.getByText("pengganti Serum A")).toBeVisible();
+  await expect(page.getByText("diganti", { exact: true })).toBeVisible();
+  await expect(total).toHaveText(rp("270.000"));
+
+  await page.getByLabel("Status Masker").selectOption({ label: "Sold out" });
+  await page.getByRole("button", { name: "Simpan", exact: true }).first().click();
+  await page.getByRole("button", { name: "Dibatalkan: Masker" }).click();
+  await expect(page.getByText("dibatalkan", { exact: true })).toBeVisible();
+  await expect(total).toHaveText(rp("200.000"));
+
+  await page.getByLabel("Kurir").fill("JNE");
+  await page.getByLabel("No. resi").fill("JP0012345678");
+  await page.getByRole("button", { name: "Tandai dikirim" }).click();
+  await expect(page.getByText(/Dikirim .* · JNE JP0012345678/)).toBeVisible();
+  await expect(page.getByLabel("Status Serum B")).toHaveValue("shipped");
+  await expect(page.getByLabel("Status Masker")).toHaveValue("sold_out");
+});

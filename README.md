@@ -21,12 +21,14 @@ Built in milestones, one pull request each:
 1. **Setup** (done): sign-in, the shop's public page, shop settings, Indonesian/English, CI
 2. **Clients, orders and the pricing engine** (done): fee per item, per bundle, a percentage, or
    NETT (fee included); discount, Instagram-tag voucher, ongkir; resellers
-3. Trips (open PO) and one-off orders, the shopping list per trip, item status, sold-out items
-   refunded or kept as credit
-4. Payments: down payment or full, transfer proof, balances, a private invoice link sent via WhatsApp
+3. **Events and item status** (done): trips / open POs, bazaars, wholesale; the shopping list per
+   event; item status; sold-out items swapped for something similar or called off
+4. Payments: down payment or full, transfer proof, balances (including refunds or credit for
+   called-off items already paid), a private invoice link sent via WhatsApp
 5. Installable app (PWA) with the shopping list working offline
-6. Dashboard and per-trip reports
-7. Public demo and her own private copy
+6. Dashboard and per-event reports
+7. Ready stock: excess stock sold at bazaars or wholesale
+8. Public demo and her own private copy
 
 ## What is in it now
 
@@ -43,6 +45,17 @@ Built in milestones, one pull request each:
   Instagram-tag voucher and ongkir (left open until known). Amounts can be typed the way they are in
   chats: `350.000`, `25rb`, `1,5jt`. The total updates while typing, and the server prices the order
   again on save. Orders are numbered per year in Jakarta time (`TLY-2026-0001`).
+- **Events**: a trip or open PO ("Jastip Singapore"), a bazaar, a wholesale sale, or anything else,
+  with dates and an order deadline. Orders can belong to an event or stand alone. A closed event
+  takes no new orders; its orders carry on.
+- **Shopping list** per event: everything still to buy, grouped by store, with who it is for. Tick
+  what is bought; mark what is sold out.
+- **Item status**: ordered → bought → arrived → packed → shipped, any step undoable. Shipping an
+  order records the courier and tracking number.
+- **Sold out**, the way she handles it: the item stops being charged and waits for the client.
+  "Tell the client" opens WhatsApp with the message ready ("…sold out 🙏 Mau diganti yang mirip
+  atau dibatalkan aja?"); then it is either swapped for a similar item (added to the same order,
+  linked, priced again) or called off.
 
 ## The pricing engine
 

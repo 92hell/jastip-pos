@@ -8,6 +8,7 @@
  * - nett:     the price already includes the fee ("NETT")
  * - bundle:   the line belongs to a bundle with one flat fee for all its items ("bundling fee 50rb")
  *
+ * A sold-out item costs nothing; a bundle keeps its fee while at least one of its items is still coming.
  * Then a discount and the Instagram-tag voucher come off the items and fees (never below zero, and
  * never off the ongkir), and ongkir is added once she knows it.
  */
@@ -20,7 +21,8 @@ export type Fee =
 export type FeeMode = Fee["mode"];
 export const FEE_MODES: FeeMode[] = ["per_item", "percent", "nett", "bundle"];
 
-export type PricingItem = { quantity: number; unitPrice: number; fee: Fee };
+/** soldOut: she could not buy it, so the client pays neither its price nor its fee. */
+export type PricingItem = { quantity: number; unitPrice: number; fee: Fee; soldOut?: boolean };
 export type PricingInput = {
   items: PricingItem[];
   bundles: { key: string; fee: number }[];
@@ -58,6 +60,8 @@ export function priceOrder(input: PricingInput): PricedOrder {
     }
     const subtotal = rupiah(item.quantity * rupiah(item.unitPrice, `item ${i + 1} price`), `item ${i + 1} subtotal`);
     const fee = item.fee;
+    if (fee.mode === "bundle" && !bundleKeys.has(fee.bundle)) throw new RangeError(`item ${i + 1}: unknown bundle`);
+    if (item.soldOut) return { subtotal: 0, fee: 0 };
     switch (fee.mode) {
       case "per_item":
         return { subtotal, fee: item.quantity * rupiah(fee.amount, `item ${i + 1} fee`) };

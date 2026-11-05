@@ -51,3 +51,8 @@ export function preferredLocale(acceptLanguage: string | null | undefined): Loca
 export function formatDate(date: Date, locale: Locale): string {
   return new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", { dateStyle: "medium", timeZone: "Asia/Jakarta" }).format(date);
 }
+
+/** A calendar day stored as YYYY-MM-DD: "12 Des 2026" / "Dec 12, 2026" (no time zone shift). */
+export function formatDay(isoDay: string, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${isoDay}T00:00:00Z`));
+}

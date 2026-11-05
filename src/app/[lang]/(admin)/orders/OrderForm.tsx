@@ -9,12 +9,14 @@ import { FEE_MODES, priceOrder, type Fee, type FeeMode } from "@/lib/pricing";
 import { saveOrder, type OrderState } from "./actions";
 
 export type OrderFormItem = {
+  /** The saved line being edited (keeps its status); absent for a new line. */
+  id?: number;
   key: number; name: string; store: string; quantity: string; unitPrice: string;
   feeMode: FeeMode; feeAmount: string; feePercent: string; bundle: string;
 };
 export type OrderFormBundle = { key: string; label: string; fee: string };
 export type OrderFormValues = {
-  clientId: string; note: string; items: OrderFormItem[]; bundles: OrderFormBundle[];
+  clientId: string; eventId: string; note: string; items: OrderFormItem[]; bundles: OrderFormBundle[];
   discount: string; applyVoucher: boolean; shipping: string;
 };
 
@@ -23,6 +25,8 @@ type Props = {
   id?: number;
   initial: OrderFormValues;
   clients: { id: number; name: string; isReseller: boolean }[];
+  events: { id: number; label: string }[];
+  noEventLabel: string;
   voucherAmount: number;
   t: Dictionary["orders"];
   errorsText: Dictionary["errors"];
@@ -30,6 +34,7 @@ type Props = {
 };
 
 const blankItem = (key: number, like?: OrderFormItem): OrderFormItem => ({
+  id: undefined,
   key, name: "", store: like?.store ?? "", quantity: "1", unitPrice: "",
   feeMode: like?.feeMode ?? "per_item", feeAmount: like?.feeAmount ?? "", feePercent: like?.feePercent ?? "", bundle: like?.bundle ?? "",
 });
@@ -66,7 +71,7 @@ function preview(values: OrderFormValues, voucherAmount: number) {
   }
 }
 
-export function OrderForm({ locale, id, initial, clients, voucherAmount, t, errorsText, resellerLabel }: Props) {
+export function OrderForm({ locale, id, initial, clients, events, noEventLabel, voucherAmount, t, errorsText, resellerLabel }: Props) {
   const [state, action, pending] = useActionState<OrderState, FormData>(saveOrder, {});
   // Unique per form: Next.js keeps recently visited pages (with their forms) hidden in the page.
   const uid = useId();
@@ -118,6 +123,15 @@ export function OrderForm({ locale, id, initial, clients, voucherAmount, t, erro
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>{c.isReseller ? `${c.name} (${resellerLabel})` : c.name}</option>
               ))}
+            </select>
+          )}
+        </Field>
+        <Field id={`${uid}-eventId`} label={t.event} error={error("eventId")}>
+          {(describedBy) => (
+            <select id={`${uid}-eventId`} value={values.eventId} onChange={(e) => setValues((v) => ({ ...v, eventId: e.target.value }))}
+              aria-invalid={Boolean(error("eventId"))} aria-describedby={describedBy} className={inputClass(Boolean(error("eventId")))}>
+              <option value="">{noEventLabel}</option>
+              {events.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
             </select>
           )}
         </Field>

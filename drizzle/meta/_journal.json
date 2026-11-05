@@ -15,6 +15,13 @@
       "when": 1793853130689,
       "tag": "0001_clients_and_orders",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793854787497,
+      "tag": "0002_events_and_item_status",
+      "breakpoints": true
     }
   ]
 }
