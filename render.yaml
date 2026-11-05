@@ -1,0 +1,66 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repository -> Apply.
+# Two services from the same code, both on the free plan (they sleep when idle and take about a
+# minute to wake up). The databases are on Neon (free, does not expire): paste their connection
+# strings when Render asks. Step by step: docs/DEPLOY.md.
+services:
+  # The public demo: sample shop, fake payment accounts, "Try as the admin" button. Its data is
+  # put back to the sample on every start (which on the free plan means after every sleep).
+  - type: web
+    name: titip-laili-demo
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    buildFilter:
+      ignoredPaths:
+        - "**/*.md"
+        - docs/**
+        - tests/**
+        - wake/**
+        - scripts/**
+        - .github/**
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DEMO_MODE
+        value: "true"
+      - key: TRUST_PROXY
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+
+  # Laili's own shop: real clients, so a database of its own and her own sign-in.
+  - type: web
+    name: titip-laili
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    buildFilter:
+      ignoredPaths:
+        - "**/*.md"
+        - docs/**
+        - tests/**
+        - wake/**
+        - scripts/**
+        - .github/**
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DEMO_MODE
+        value: "false"
+      - key: TRUST_PROXY
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      # Her sign-in, created on first start. The password needs 12+ characters; she can change it later.
+      - key: OWNER_USERNAME
+        value: laili
+      - key: OWNER_NAME
+        value: Laili
+      - key: OWNER_PASSWORD
+        sync: false

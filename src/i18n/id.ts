@@ -11,7 +11,7 @@ export const id = {
     loading: "Memuat…",
     skipToContent: "Langsung ke isi",
     offline: "Sedang offline. Daftar belanja tetap bisa dipakai; centang dikirim saat ada sinyal.",
-    demoBanner: "Ini demo publik: jangan masukkan data pribadi asli. Semua data kembali seperti semula setiap malam.",
+    demoBanner: "Ini demo publik: jangan masukkan data pribadi asli. Semua data kembali seperti semula secara berkala.",
   },
   shop: {
     rules: "Aturan jastip",
