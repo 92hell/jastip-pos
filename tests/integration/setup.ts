@@ -11,7 +11,7 @@ setDb(db);
 
 /** Every test starts from empty tables (test files run one at a time). */
 beforeEach(async () => {
-  await db.execute(sql`TRUNCATE users, sessions, business_settings RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE users, sessions, business_settings, clients, orders, order_bundles, order_items, order_counters RESTART IDENTITY CASCADE`);
 });
 
 afterAll(async () => {

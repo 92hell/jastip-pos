@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState, type ReactNode } from "react";
+import { useActionState, useId, useState } from "react";
+import { Field, inputClass } from "@/components/Field";
 import type { Locale } from "@/i18n";
 import type { Dictionary } from "@/i18n/id";
 import type { PaymentAccount } from "@/lib/db/schema";
@@ -27,6 +28,8 @@ export function SettingsForm({ locale, t, errorsText, initial, demo }: {
   demo: boolean;
 }) {
   const [state, action, pending] = useActionState<SettingsState, FormData>(saveSettings, {});
+  // Unique per form: Next.js keeps recently visited pages (with their forms) hidden in the page.
+  const uid = useId();
   const [accounts, setAccounts] = useState<(PaymentAccount & { key: number })[]>(
     initial.paymentAccounts.map((a, i) => ({ ...a, key: i })),
   );
@@ -39,9 +42,9 @@ export function SettingsForm({ locale, t, errorsText, initial, demo }: {
 
   function field(name: keyof Values, label: string, opts: { hint?: string; type?: string; inputMode?: "numeric"; autoComplete?: string } = {}) {
     return (
-      <Field id={name} label={label} hint={opts.hint} error={error(name)}>
+      <Field id={`${uid}-${name}`} label={label} hint={opts.hint} error={error(name)}>
         {(describedBy) => (
-          <input id={name} name={name} type={opts.type ?? "text"} inputMode={opts.inputMode} autoComplete={opts.autoComplete ?? "off"}
+          <input id={`${uid}-${name}`} name={name} type={opts.type ?? "text"} inputMode={opts.inputMode} autoComplete={opts.autoComplete ?? "off"}
             value={String(values[name])} onChange={set(name)} aria-invalid={Boolean(error(name))} aria-describedby={describedBy}
             className={inputClass(Boolean(error(name)))} />
         )}
@@ -74,11 +77,12 @@ export function SettingsForm({ locale, t, errorsText, initial, demo }: {
           <div key={account.key} role="group" aria-label={fill(t.accountN, i + 1)} className="grid gap-3 rounded-2xl border border-line p-3 sm:grid-cols-[1fr_1.4fr_1.4fr_auto] sm:items-end">
             {(["bank", "holder", "number"] as const).map((part) => {
               const name = `${part}_${i}`;
+              const fieldId = `${uid}-${name}`;
               const message = error(`paymentAccounts.${i}.${part}`);
               return (
-                <Field key={part} id={name} label={t[part]} error={message}>
+                <Field key={part} id={fieldId} label={t[part]} error={message}>
                   {(describedBy) => (
-                    <input id={name} name={name} value={account[part]} inputMode={part === "number" ? "numeric" : undefined} autoComplete="off"
+                    <input id={`${uid}-${name}`} name={name} value={account[part]} inputMode={part === "number" ? "numeric" : undefined} autoComplete="off"
                       onChange={(e) => setAccounts((all) => all.map((a) => (a.key === account.key ? { ...a, [part]: e.target.value } : a)))}
                       aria-invalid={Boolean(message)} aria-describedby={describedBy} className={inputClass(Boolean(message))} />
                   )}
@@ -101,9 +105,9 @@ export function SettingsForm({ locale, t, errorsText, initial, demo }: {
 
       <fieldset className="space-y-4 rounded-3xl bg-white p-5 shadow-sm [&>legend+*]:clear-both">
         <legend className="float-left mb-2 w-full font-display text-2xl">{t.rules}</legend>
-        <Field id="rules" label={t.rules} hint={t.rulesHint} error={error("rules")}>
+        <Field id={`${uid}-rules`} label={t.rules} hint={t.rulesHint} error={error("rules")}>
           {(describedBy) => (
-            <textarea id="rules" name="rules" rows={6} value={values.rules} onChange={set("rules")} aria-describedby={describedBy}
+            <textarea id={`${uid}-rules`} name="rules" rows={6} value={values.rules} onChange={set("rules")} aria-describedby={describedBy}
               aria-invalid={Boolean(error("rules"))} className={inputClass(Boolean(error("rules")))} />
           )}
         </Field>
@@ -114,25 +118,5 @@ export function SettingsForm({ locale, t, errorsText, initial, demo }: {
         {pending ? errorsText.saving : errorsText.save}
       </button>
     </form>
-  );
-}
-
-function inputClass(invalid: boolean) {
-  return `w-full rounded-xl border bg-white px-3 py-2.5 ${invalid ? "border-danger" : "border-line"}`;
-}
-
-/** A label, the control, and its hint or error, linked for screen readers. */
-function Field({ id, label, hint, error, children }: { id: string; label: string; hint?: string; error?: string; children: (describedBy?: string) => ReactNode }) {
-  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
-  return (
-    <div>
-      <label htmlFor={id} className="mb-1 block font-semibold">{label}</label>
-      {children(describedBy)}
-      {error ? (
-        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-danger">{error}</p>
-      ) : (
-        hint && <p id={`${id}-hint`} className="mt-1 text-sm text-muted">{hint}</p>
-      )}
-    </div>
   );
 }
