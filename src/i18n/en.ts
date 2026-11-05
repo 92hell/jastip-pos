@@ -11,6 +11,7 @@ export const en: Dictionary = {
     saved: "Saved.",
     loading: "Loading…",
     skipToContent: "Skip to content",
+    offline: "You are offline. Shopping lists still work; ticks are sent when there is signal.",
     demoBanner: "This is a public demo: please don't enter real personal data. Everything resets every night.",
   },
   shop: {
@@ -31,7 +32,7 @@ export const en: Dictionary = {
     demoHint: "Demo: sign in as the shop admin, no sign-up needed.",
     tryDemo: "Try as the admin",
   },
-  nav: { dashboard: "Home", events: "Events", clients: "Clients", orders: "Orders", settings: "Shop settings", signedInAs: "Signed in as {name}" },
+  nav: { more: "More", tabs: "Main menu", install: "Install the app", installed: "The app is installed on this phone.", installHint: "Install it on the home screen so it opens like an app, and shopping lists work without signal.", iosInstall: "On iPhone: tap the Share button (square with an arrow), then “Add to Home Screen”.", androidInstall: "On Android: open Chrome’s menu (⋮), then “Install app”.", dashboard: "Home", events: "Events", clients: "Clients", orders: "Orders", settings: "Shop settings", signedInAs: "Signed in as {name}" },
   events: {
     title: "Events",
     intro: "Trips, open POs, bazaars or wholesale: orders can be grouped per event.",
@@ -73,6 +74,10 @@ export const en: Dictionary = {
     soldOut: "Sold out",
     for: "for {client} · {order}",
     progress: "{done} of {total} bought",
+    notSent: "not sent yet",
+    pending: "{n} ticks not sent yet. They are sent automatically when there is signal.",
+    synced: "All ticks have been sent.",
+    savedOffline: "This list is saved on the phone: it opens and can be ticked without signal.",
   },
   items: {
     status: "Status",

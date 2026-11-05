@@ -50,7 +50,7 @@ test("the shopping list groups items by store, ticks what is bought and marks wh
   await expect(page.getByRole("region", { name: "Grand Indonesia" }).getByRole("button", { name: "Sudah dibeli: Tas Charles & Keith" }))
     .toHaveAttribute("aria-pressed", "true");
   await expectAccessible(page, "shopping list");
-  const progress = page.getByRole("status");
+  const progress = page.getByText(/^\d+ dari \d+ sudah dibeli$/);
   const before = Number((await progress.textContent())?.match(/^(\d+)/)?.[1]);
 
   await zara.getByRole("button", { name: "Sudah dibeli: Parfum Zara 100ml" }).click();

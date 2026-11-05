@@ -10,6 +10,7 @@ export const id = {
     saved: "Tersimpan.",
     loading: "Memuat…",
     skipToContent: "Langsung ke isi",
+    offline: "Sedang offline. Daftar belanja tetap bisa dipakai; centang dikirim saat ada sinyal.",
     demoBanner: "Ini demo publik: jangan masukkan data pribadi asli. Semua data kembali seperti semula setiap malam.",
   },
   shop: {
@@ -30,7 +31,7 @@ export const id = {
     demoHint: "Demo: masuk sebagai admin toko tanpa mendaftar.",
     tryDemo: "Coba sebagai admin",
   },
-  nav: { dashboard: "Beranda", events: "Event", clients: "Klien", orders: "Pesanan", settings: "Pengaturan toko", signedInAs: "Masuk sebagai {name}" },
+  nav: { more: "Lainnya", tabs: "Menu utama", install: "Pasang aplikasi", installed: "Aplikasi sudah terpasang di HP ini.", installHint: "Pasang di layar utama HP supaya dibuka seperti aplikasi, dan daftar belanja tetap bisa dipakai tanpa sinyal.", iosInstall: "Di iPhone: ketuk tombol Bagikan (kotak dengan panah), lalu pilih “Tambah ke Layar Utama”.", androidInstall: "Di Android: buka menu Chrome (⋮), lalu pilih “Instal aplikasi”.", dashboard: "Beranda", events: "Event", clients: "Klien", orders: "Pesanan", settings: "Pengaturan toko", signedInAs: "Masuk sebagai {name}" },
   events: {
     title: "Event",
     intro: "Trip, open PO, bazaar, atau grosir: pesanan bisa dikelompokkan per event.",
@@ -72,6 +73,10 @@ export const id = {
     soldOut: "Sold out",
     for: "untuk {client} · {order}",
     progress: "{done} dari {total} sudah dibeli",
+    notSent: "belum terkirim",
+    pending: "{n} centang belum terkirim. Akan dikirim otomatis saat ada sinyal.",
+    synced: "Semua centang sudah terkirim.",
+    savedOffline: "Daftar ini tersimpan di HP: tetap bisa dibuka dan dicentang tanpa sinyal.",
   },
   items: {
     status: "Status",
